@@ -194,7 +194,8 @@
     }
     @keyframes sectionFadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
     #outputArea{display:none;}
-    #outputArea.visible{display:block;}
+    #outputArea:not(.visible){display:none !important;}
+    #outputArea.visible{display:block !important;}
     .output-section{
       background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:10px;
       padding:1.6rem 1.75rem;margin-bottom:1.25rem;box-shadow:var(--card-shadow);
@@ -565,8 +566,81 @@
       display:flex;align-items:center;gap:.4rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;
     }
     .disclaimer-text{font-size:.82rem;color:var(--text-secondary);line-height:1.55;margin:0;}
+    
+    /* Sample Output Landing Page Preview */
+    .sample-output-section{
+      margin-top:2rem;margin-bottom:2.5rem;background:var(--bg-surface);
+      border:1px dashed var(--border-accent);border-radius:12px;
+      padding:1.6rem 1.75rem;box-shadow:var(--card-shadow);
+      position:relative;transition:all .3s ease;animation:sectionFadeUp .4s ease forwards;
+    }
+    .sample-output-badge-wrap{
+      display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+      margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border-subtle);
+      flex-wrap:wrap;
+    }
+    .sample-badge{
+      display:inline-flex;align-items:center;gap:.45rem;
+      font-family:var(--font-mono);font-size:.72rem;font-weight:700;
+      color:var(--teal-bright);background:var(--teal-faint);border:1px solid var(--border-accent);
+      padding:.25rem .65rem;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;
+    }
+    .sample-subtitle{
+      font-size:.85rem;color:var(--text-secondary);margin-bottom:1.25rem;line-height:1.6;
+    }
+    .sample-grid{
+      display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.2rem;
+    }
+    .sample-card{
+      background:var(--bg-canvas);border:1px solid var(--border-subtle);
+      border-radius:8px;padding:1rem 1.15rem;display:flex;flex-direction:column;gap:.6rem;
+    }
+    .sample-card-title{
+      font-family:var(--font-mono);font-size:.78rem;font-weight:700;color:var(--text-primary);
+      display:flex;align-items:center;gap:.4rem;
+    }
+    .sample-card-desc{
+      font-size:.8rem;color:var(--text-secondary);line-height:1.5;margin:0;
+    }
+    .sample-mini-table{
+      width:100%;border-collapse:collapse;font-size:.75rem;font-family:var(--font-mono);margin-top:.4rem;
+    }
+    .sample-mini-table th{
+      color:var(--text-muted);text-align:left;padding:.3rem .4rem;border-bottom:1px solid var(--border-subtle);font-size:.68rem;
+    }
+    .sample-mini-table td{
+      padding:.35rem .4rem;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text-secondary);
+    }
+    .sample-action-row{
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-subtle);flex-wrap:wrap;
+    }
+    .sample-prompt-hint{
+      font-size:.78rem;color:var(--text-muted);font-family:var(--font-mono);
+    }
+    .btn-use-sample{
+      background:var(--bg-surface-elevated);border:1px solid var(--border-accent);
+      color:var(--teal-bright);border-radius:5px;padding:.4rem .85rem;font-size:.75rem;
+      font-weight:600;font-family:var(--font-mono);cursor:pointer;transition:all .15s ease;
+      display:inline-flex;align-items:center;gap:.4rem;
+    }
+    .btn-use-sample:hover{
+      background:var(--teal-faint);border-color:var(--teal);filter:brightness(1.1);
+    }
 
-    @media(max-width:768px){
+    /* Results inline error container */
+    .results-error-card{
+      margin-top:1.5rem;margin-bottom:1.5rem;padding:1.4rem 1.6rem;
+      background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.3);
+      border-radius:10px;animation:sectionFadeUp .35s ease forwards;
+    }
+    .results-error-header{
+      display:flex;align-items:center;gap:.6rem;color:var(--red);
+      font-family:var(--font-mono);font-size:.9rem;font-weight:700;margin-bottom:.5rem;
+    }
+    .results-error-text{
+      font-size:.85rem;color:var(--text-secondary);line-height:1.6;margin:0 0 1rem;
+    }
       .nav-container{padding:.7rem 1rem;}
       main{padding:1.75rem 1rem 4rem;}
       .hero-title{font-size:1.7rem;}
@@ -755,7 +829,103 @@
       </form>
     </section>
 
-    <div id="outputArea">
+    <!-- Inline Results Area Error Alert (Shown only on generation failure) -->
+    <div id="resultsErrorCard" class="results-error-card" style="display:none;" role="alert">
+      <div class="results-error-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Design Synthesis Notice</span>
+      </div>
+      <p id="resultsErrorDetail" class="results-error-text">Failed to generate circuit design.</p>
+      <button type="button" id="retryGenerateBtn" class="btn-use-sample">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span>Adjust Prompt &amp; Retry</span>
+      </button>
+    </div>
+
+    <!-- Sample Output Preview (Visible on landing page before first generation) -->
+    <section id="sampleOutputSection" class="sample-output-section">
+      <div class="sample-output-badge-wrap">
+        <span class="sample-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Example Output Preview
+        </span>
+        <button type="button" id="samplePromptBtn" class="btn-use-sample" title="Click to load this example into the idea form">
+          <span>Load this prompt &uarr;</span>
+        </button>
+      </div>
+
+      <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:.4rem;color:var(--text-primary);font-family:var(--font-mono);">
+        IoT Smart Plant Watering System
+      </h3>
+      <p class="sample-subtitle">
+        Here is an example synthesized engineering package &mdash; complete with component BOM, pin-by-pin interconnects, schematic diagram, and rule checks. Type your own idea above to generate a custom design!
+      </p>
+
+      <div class="sample-grid">
+        <!-- Architecture Card -->
+        <div class="sample-card">
+          <div class="sample-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg>
+            <span>Architecture &amp; Rules Check</span>
+          </div>
+          <p class="sample-card-desc">
+            ESP32 NodeMCU reads soil capacitance sensor, displays moisture on I2C OLED, and drives a 5V relay with flyback diode protection.
+          </p>
+          <div style="margin-top:.4rem;display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-family:var(--font-mono);color:var(--green);background:rgba(34,197,94,0.1);padding:.25rem .55rem;border-radius:4px;border:1px solid rgba(34,197,94,0.3);width:fit-content;">
+            <span>&#10003; Electrical Rules: Verified (5 checks passed)</span>
+          </div>
+        </div>
+
+        <!-- Sample BOM Snippet -->
+        <div class="sample-card">
+          <div class="sample-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span>Sample Bill of Materials (BOM)</span>
+          </div>
+          <table class="sample-mini-table">
+            <thead>
+              <tr><th>Component</th><th>Qty</th><th style="text-align:right">Price</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ESP32 NodeMCU Wi-Fi Dev Board</td><td>1</td><td style="text-align:right;color:var(--green)">&#8377;350</td></tr>
+              <tr><td>Capacitive Soil Moisture v1.2</td><td>1</td><td style="text-align:right;color:var(--green)">&#8377;120</td></tr>
+              <tr><td>0.96&quot; I2C OLED Display (128x64)</td><td>1</td><td style="text-align:right;color:var(--green)">&#8377;180</td></tr>
+              <tr><td>5V Relay Module + 1N4007 Diode</td><td>1</td><td style="text-align:right;color:var(--green)">&#8377;60</td></tr>
+              <tr><td>Submersible Mini 5V Pump</td><td>1</td><td style="text-align:right;color:var(--green)">&#8377;90</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sample Wiring Snippet -->
+        <div class="sample-card">
+          <div class="sample-card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a6 6 0 0 1-12 0V8z"/></svg>
+            <span>Sample Pin-by-Pin Wiring</span>
+          </div>
+          <table class="sample-mini-table">
+            <thead>
+              <tr><th>From</th><th>To</th><th>Signal / Wire</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sensor VCC</td><td>ESP32 3V3</td><td>3.3V Power</td></tr>
+              <tr><td>Sensor AOUT</td><td>ESP32 GPIO 34</td><td>Analog ADC1_6</td></tr>
+              <tr><td>OLED SDA / SCL</td><td>GPIO 21 / 22</td><td>I2C Data / Clock</td></tr>
+              <tr><td>Relay IN</td><td>ESP32 GPIO 23</td><td>Digital Control</td></tr>
+              <tr><td>Pump (+)</td><td>Relay COM / NO</td><td>Switched +5V Rail</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sample-action-row">
+        <span class="sample-prompt-hint">&larr; Enter your idea above or test with this sample prompt</span>
+        <button type="button" id="sampleTryBtn" class="btn-use-sample">
+          <span>Try this prompt &uarr;</span>
+        </button>
+      </div>
+    </section>
+
+    <div id="outputArea" style="display:none;">
       <section id="sectionTitleSummary" class="output-section result-hero">
         <!-- Voice Input Transcription Display -->
         <div id="transcriptionBox" class="transcription-box" style="display:none;">
@@ -796,7 +966,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
             Block Diagram &amp; Architecture
           </div>
-          <span class="section-ref">U1</span>
         </div>
         <div class="diagram-container">
           <pre id="asciiDiagram" class="ascii-pre"></pre>
@@ -823,7 +992,6 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Export SVG</span>
             </button>
-            <span class="section-ref">SCH</span>
           </div>
         </div>
         <div class="schematic-canvas-container" id="schematicCanvasContainer">
@@ -849,7 +1017,7 @@
             Bill of Materials
           </div>
           <div class="section-actions">
-            <div id="totalCostBadge" class="total-cost-badge"><span id="totalCostLabel">Estimated total:</span> <strong id="totalCostValue">&#8377;0</strong></div>
+            <div id="totalCostBadge" class="total-cost-badge"><span id="totalCostLabel">Estimated total:</span> <strong id="totalCostValue">&mdash;</strong></div>
             <button type="button" id="copyBomBtn" class="copy-btn">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span id="copyBomText">Copy BOM</span>
@@ -904,7 +1072,6 @@
             </svg>
             Build Check &mdash; Physical Wiring Verification
           </div>
-          <span class="section-ref">CHECK</span>
         </div>
 
         <p class="build-check-subtitle">
@@ -1016,7 +1183,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
             Step-by-Step Assembly
           </div>
-          <span class="section-ref">ASSY</span>
         </div>
         <ol id="buildStepsList" class="custom-numbered-list"></ol>
       </section>
@@ -1027,7 +1193,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
             Engineering Calculations
           </div>
-          <span class="section-ref">CALC</span>
         </div>
         <div id="calculationsList"></div>
       </section>
@@ -1046,7 +1211,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31M14 2v7.31M8.5 2h7M14 9.3l5.5 8.9A2 2 0 0 1 17.8 21H6.2a2 2 0 0 1-1.7-2.8L10 9.3"/><path d="M7 16h10"/></svg>
             Bench Testing Protocol
           </div>
-          <span class="section-ref">TEST</span>
         </div>
         <ol id="testingList" class="custom-numbered-list"></ol>
       </section>
@@ -1057,7 +1221,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4.5c1.62-1.63 5-1.5 5-1.5"/><path d="M12 15v5s3.03-.55 4.5-2c1.63-1.62 1.5-5 1.5-5"/></svg>
             Productization &amp; Next Steps
           </div>
-          <span class="section-ref">R&amp;D</span>
         </div>
         <ul id="nextStepsList" class="custom-bullet-list"></ul>
       </section>
@@ -1499,8 +1662,54 @@
     projectIdeaInput.addEventListener('input',adjustH);
     projectIdeaInput.addEventListener('paste',()=>setTimeout(adjustH,50));
 
+    const resultsErrorCard = document.getElementById('resultsErrorCard'),
+          resultsErrorDetail = document.getElementById('resultsErrorDetail'),
+          retryGenerateBtn = document.getElementById('retryGenerateBtn'),
+          sampleOutputSection = document.getElementById('sampleOutputSection'),
+          samplePromptBtn = document.getElementById('samplePromptBtn'),
+          sampleTryBtn = document.getElementById('sampleTryBtn');
+
     function showError(m){errorMessage.textContent=m;errorBox.style.display='flex';}
     function hideError(){errorBox.style.display='none';}
+
+    function showResultsError(m) {
+      if (resultsErrorDetail) resultsErrorDetail.textContent = m;
+      if (resultsErrorCard) {
+        resultsErrorCard.style.display = 'block';
+        resultsErrorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function hideResultsError() {
+      if (resultsErrorCard) resultsErrorCard.style.display = 'none';
+    }
+
+    function useSamplePrompt() {
+      if (projectIdeaInput) {
+        projectIdeaInput.value = "Smart plant watering system with soil moisture and OLED display";
+        adjustH();
+        hideError();
+        hideResultsError();
+        projectIdeaInput.focus();
+        projectIdeaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    if (samplePromptBtn) samplePromptBtn.addEventListener('click', useSamplePrompt);
+    if (sampleTryBtn) sampleTryBtn.addEventListener('click', useSamplePrompt);
+    if (retryGenerateBtn) retryGenerateBtn.addEventListener('click', () => {
+      hideResultsError();
+      if (projectIdeaInput) {
+        projectIdeaInput.focus();
+        projectIdeaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+
+    // Enforce initial hidden state on page load
+    if (outputArea) {
+      outputArea.classList.remove('visible');
+      outputArea.style.display = 'none';
+    }
 
     function setLoading(on){
       if(on){
@@ -1558,6 +1767,11 @@
             budget=document.getElementById('budget').value,
             power=document.getElementById('powerSource').value;
       setLoading(true);
+      // Guarantee outputArea is completely hidden while generating
+      outputArea.classList.remove('visible');
+      outputArea.style.display = 'none';
+      hideResultsError();
+
       try{
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? ''
@@ -1576,7 +1790,13 @@
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Failed to generate circuit design.');
         currentCircuitData=d;renderCircuitResult(d);
-      }catch(err){showError(err.message||'Error communicating with server.');}
+      }catch(err){
+        // Ensure no empty tables are visible on error
+        outputArea.classList.remove('visible');
+        outputArea.style.display = 'none';
+        showError(err.message||'Error communicating with server.');
+        showResultsError(err.message||'Failed to generate circuit design. Please check your prompt and try again.');
+      }
       finally{setLoading(false);}
     });
 
@@ -1674,6 +1894,9 @@
         console.error('Error rendering schematic diagram:', schemErr);
       }
 
+      hideResultsError();
+      if (sampleOutputSection) sampleOutputSection.style.display = 'none';
+      outputArea.style.display = 'block';
       outputArea.classList.add('visible');
       outputArea.querySelectorAll('.output-section').forEach((s,i)=>{
         s.classList.remove('revealed');s.style.animationDelay=(i*100)+'ms';void s.offsetWidth;s.classList.add('revealed');
