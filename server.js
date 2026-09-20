@@ -169,11 +169,16 @@ At least 6 components and 10 connections where the project allows.`;
   }
 });
 
+// Health check endpoint for monitoring / Render deployment
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'CircuitMind' });
+});
+
 // Fallback to index.html for SPA routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`CircuitMind server running with Gemini AI at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`CircuitMind server running with Gemini AI on port ${PORT}`);
 });
