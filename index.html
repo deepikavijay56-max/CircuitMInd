@@ -313,6 +313,22 @@
     .safety-list{list-style:none;display:flex;flex-direction:column;gap:.7rem;}
     .safety-list li{position:relative;padding-left:1.6rem;font-size:.86rem;color:var(--text-primary);line-height:1.55;}
     .safety-list li::before{content:"\26A0";position:absolute;left:0;top:-.05rem;color:var(--amber);font-size:.82rem;}
+    
+    /* Verification badge and details */
+    .verification-card{margin-top:1.2rem;padding:.9rem 1.1rem;border-radius:6px;font-family:var(--font-mono);font-size:.76rem;transition:all .2s ease;}
+    .verification-card.status-verified{background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);}
+    .verification-card.status-warnings{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.35);}
+    .verification-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;}
+    .verification-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.25rem .65rem;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .status-verified .verification-badge{background:rgba(34,197,94,0.18);color:var(--green);border:1px solid rgba(34,197,94,0.4);}
+    .status-warnings .verification-badge{background:rgba(245,158,11,0.18);color:var(--amber);border:1px solid rgba(245,158,11,0.4);}
+    .v-meta{font-size:.7rem;color:var(--text-muted);}
+    .verification-list{margin-top:.65rem;display:flex;flex-direction:column;gap:.45rem;}
+    .verification-item{display:flex;align-items:flex-start;gap:.5rem;line-height:1.45;padding:.4rem .6rem;border-radius:4px;background:rgba(0,0,0,0.25);}
+    .verification-item.item-pass{color:var(--text-secondary);}
+    .verification-item.item-warn{color:#FCD34D;border-left:2px solid var(--amber);}
+    .verification-item .item-icon{flex-shrink:0;margin-top:.15rem;font-weight:bold;}
+
     @media(max-width:768px){
       .nav-container{padding:.7rem 1rem;}
       main{padding:1.75rem 1rem 4rem;}
@@ -446,6 +462,18 @@
         <div class="result-title-label">Synthesized Architecture</div>
         <h3 id="circuitTitle" class="result-title"></h3>
         <p id="circuitSummary" class="result-summary"></p>
+
+        <!-- Engineering Verification Checks -->
+        <div id="verificationContainer" class="verification-card" style="display:none;">
+          <div class="verification-top">
+            <div id="verificationBadge" class="verification-badge">
+              <span id="verificationIcon" class="v-icon"></span>
+              <span id="verificationStatusText" class="v-text"></span>
+            </div>
+            <span id="verificationCount" class="v-meta"></span>
+          </div>
+          <div id="verificationList" class="verification-list"></div>
+        </div>
       </section>
 
       <section id="sectionDiagramBlocks" class="output-section">
@@ -653,7 +681,9 @@
             power=document.getElementById('powerSource').value;
       setLoading(true);
       try{
-        const API_BASE = 'https://circuitmind-xomj.onrender.com';
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? ''
+          : 'https://circuitmind-xomj.onrender.com';
         const r=await fetch(`${API_BASE}/api/generate-circuit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea,skill,budget,power})});
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Failed to generate circuit design.');
@@ -665,6 +695,42 @@
     function renderCircuitResult(d){
       document.getElementById('circuitTitle').textContent=d.title||'Custom Circuit Design';
       document.getElementById('circuitSummary').textContent=d.summary||'';
+
+      // Verification checks rendering
+      const vc = document.getElementById('verificationContainer');
+      if (d.verification && Array.isArray(d.verification.checks) && d.verification.checks.length > 0) {
+        vc.style.display = 'block';
+        const isVerified = d.verification.status === 'verified';
+        vc.className = 'verification-card ' + (isVerified ? 'status-verified' : 'status-warnings');
+        const icon = document.getElementById('verificationIcon');
+        const statusText = document.getElementById('verificationStatusText');
+        const meta = document.getElementById('verificationCount');
+        const list = document.getElementById('verificationList');
+        list.innerHTML = '';
+
+        if (isVerified) {
+          icon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+          statusText.textContent = 'Electrical Rules: Verified';
+          meta.textContent = `${d.verification.checks.length} check${d.verification.checks.length > 1 ? 's' : ''} passed`;
+        } else {
+          const warnCount = d.verification.checks.filter(c => !c.passed).length;
+          icon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          statusText.textContent = `Electrical Warning${warnCount > 1 ? 's' : ''} Flagged`;
+          meta.textContent = `${warnCount} warning${warnCount > 1 ? 's' : ''} detected`;
+        }
+
+        d.verification.checks.forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'verification-item ' + (c.passed ? 'item-pass' : 'item-warn');
+          const iHtml = c.passed
+            ? '<span class="item-icon" style="color:var(--green)">✓</span>'
+            : '<span class="item-icon" style="color:var(--amber)">⚠</span>';
+          item.innerHTML = `${iHtml}<div><strong style="display:block;margin-bottom:0.15rem;font-size:0.75rem">${esc(c.name)}</strong><span>${esc(c.message)}</span></div>`;
+          list.appendChild(item);
+        });
+      } else {
+        if(vc) vc.style.display = 'none';
+      }
       document.getElementById('asciiDiagram').textContent=d.block_diagram||'';
       const bc=document.getElementById('functionalBlocksList');bc.innerHTML='';
       (d.blocks||[]).forEach(b=>{const el=document.createElement('div');el.className='block-card';

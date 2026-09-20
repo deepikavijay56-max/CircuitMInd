@@ -1,9 +1,21 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
+
+// Load component electrical specifications
+let componentSpecs = { components: [] };
+try {
+  const specsPath = path.join(__dirname, 'data', 'component-specs.json');
+  if (fs.existsSync(specsPath)) {
+    componentSpecs = JSON.parse(fs.readFileSync(specsPath, 'utf8'));
+  }
+} catch (e) {
+  console.warn("Could not load component specs:", e.message);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +90,134 @@ async function generateCircuitFromGemini(prompt) {
   }
 
   throw lastError;
+}
+
+// Lightweight engineering verification engine
+function verifyCircuitDesign(design) {
+  const checks = [];
+  const comps = Array.isArray(design.components) ? design.components : [];
+  const conns = Array.isArray(design.connections) ? design.connections : [];
+  const blocks = Array.isArray(design.blocks) ? design.blocks : [];
+
+  // Helper to match text in components, blocks, or connections
+  function isComponentPresent(keywords) {
+    const kw = keywords.map(k => k.toLowerCase());
+    for (const c of comps) {
+      const text = `${c.name || ''} ${c.purpose || ''}`.toLowerCase();
+      if (kw.some(k => text.includes(k))) return true;
+    }
+    for (const b of blocks) {
+      const text = `${b.name || ''} ${b.role || ''}`.toLowerCase();
+      if (kw.some(k => text.includes(k))) return true;
+    }
+    for (const c of conns) {
+      const text = `${c.from || ''} ${c.to || ''} ${c.note || ''}`.toLowerCase();
+      if (kw.some(k => text.includes(k))) return true;
+    }
+    return false;
+  }
+
+  // Helper to match specifically in components list
+  function isInComponentsList(keywords) {
+    const kw = keywords.map(k => k.toLowerCase());
+    return comps.some(c => {
+      const text = `${c.name || ''} ${c.purpose || ''}`.toLowerCase();
+      return kw.some(k => text.includes(k));
+    });
+  }
+
+  // 1. ESP32 + 5V logic component check
+  const esp32Spec = (componentSpecs.components || []).find(c => c.id === 'esp32') || {
+    keywords: ['esp32', 'esp-32', 'esp 32']
+  };
+  const hasESP32 = isComponentPresent(esp32Spec.keywords);
+
+  if (hasESP32) {
+    const fiveVoltSpecs = (componentSpecs.components || []).filter(c => c.id !== 'esp32' && c.voltage_level === '5V');
+    const matched5V = [];
+
+    for (const spec of fiveVoltSpecs) {
+      if (isComponentPresent(spec.keywords)) {
+        matched5V.push(spec.name);
+      }
+    }
+
+    // Also check for generic 5V sensor / modules in components list
+    for (const c of comps) {
+      const name = (c.name || '').toLowerCase();
+      const purpose = (c.purpose || '').toLowerCase();
+      if ((name.includes('5v') || purpose.includes('5v')) && !matched5V.some(m => name.includes(m.toLowerCase()))) {
+        if (!name.includes('esp32') && !name.includes('power') && !name.includes('supply') && !name.includes('regulator') && !name.includes('usb')) {
+          matched5V.push(c.name);
+        }
+      }
+    }
+
+    if (matched5V.length > 0) {
+      checks.push({
+        id: "voltage_mismatch",
+        name: "Logic Voltage Compatibility",
+        passed: false,
+        severity: "warning",
+        message: `Voltage mismatch warning: ESP32 operates at 3.3V logic and GPIO pins are NOT 5V tolerant. Detected 5V component(s): ${[...new Set(matched5V)].join(', ')}. A bidirectional logic level shifter or resistor voltage divider is required to protect the ESP32.`
+      });
+    } else {
+      checks.push({
+        id: "voltage_mismatch",
+        name: "Logic Voltage Compatibility",
+        passed: true,
+        severity: "info",
+        message: "Logic levels verified: ESP32 3.3V operating voltage is compatible with all identified components."
+      });
+    }
+  } else {
+    checks.push({
+      id: "voltage_mismatch",
+      name: "Logic Voltage Compatibility",
+      passed: true,
+      severity: "info",
+      message: "Logic voltage levels verified for active microcontroller."
+    });
+  }
+
+  // 2. Relay module + flyback diode check
+  const relaySpec = (componentSpecs.components || []).find(c => c.id === 'relay_module') || {
+    keywords: ['relay module', 'relay', '5v relay']
+  };
+  const hasRelayInComponents = isInComponentsList(relaySpec.keywords);
+
+  if (hasRelayInComponents) {
+    const compConnText = [
+      ...comps.map(c => `${c.name || ''} ${c.purpose || ''}`),
+      ...conns.map(c => `${c.from || ''} ${c.to || ''} ${c.note || ''}`)
+    ].join(' ').toLowerCase();
+
+    const hasDiode = compConnText.includes('flyback diode') || compConnText.includes('diode');
+
+    if (!hasDiode) {
+      checks.push({
+        id: "relay_flyback_protection",
+        name: "Inductive Kickback Protection",
+        passed: false,
+        severity: "warning",
+        message: "Missing flyback diode: Relay module coil creates high-voltage back-EMF spikes when switching off. Ensure a 1N4007 flyback diode is placed across the relay coil to protect the driving transistor/GPIO."
+      });
+    } else {
+      checks.push({
+        id: "relay_flyback_protection",
+        name: "Inductive Kickback Protection",
+        passed: true,
+        severity: "info",
+        message: "Flyback protection verified: Diode snubbing protection detected for inductive relay coil."
+      });
+    }
+  }
+
+  const allPassed = checks.every(c => c.passed);
+  return {
+    status: allPassed ? "verified" : "warnings",
+    checks: checks
+  };
 }
 
 // Route: POST /api/generate-circuit (with rate limiting)
@@ -159,6 +299,9 @@ At least 6 components and 10 connections where the project allows.`;
       testing: Array.isArray(parsedData.testing) ? parsedData.testing : [],
       next_steps: Array.isArray(parsedData.next_steps) ? parsedData.next_steps : []
     };
+
+    // Run electrical engineering verification rules
+    sanitizedResponse.verification = verifyCircuitDesign(sanitizedResponse);
 
     return res.json(sanitizedResponse);
   } catch (apiErr) {

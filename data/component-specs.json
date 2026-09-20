@@ -1,0 +1,46 @@
+{
+  "components": [
+    {
+      "id": "arduino_uno",
+      "name": "Arduino Uno",
+      "logic_voltage": 5.0,
+      "voltage_level": "5V",
+      "keywords": ["arduino uno", "arduino", "atmega328p", "uno"],
+      "type": "microcontroller"
+    },
+    {
+      "id": "esp32",
+      "name": "ESP32",
+      "logic_voltage": 3.3,
+      "voltage_level": "3.3V",
+      "keywords": ["esp32", "esp-32", "esp 32", "nodemcu-32s", "wroom"],
+      "type": "microcontroller"
+    },
+    {
+      "id": "relay_module",
+      "name": "Relay Module",
+      "logic_voltage": 5.0,
+      "voltage_level": "5V",
+      "keywords": ["relay module", "relay", "5v relay", "spdt relay"],
+      "type": "actuator",
+      "requires_protection": "flyback diode"
+    },
+    {
+      "id": "dht22",
+      "name": "DHT22 Sensor",
+      "logic_voltage": 5.0,
+      "voltage_level": "5V",
+      "keywords": ["dht22", "dht-22", "am2302", "dht11", "dht-11"],
+      "type": "sensor"
+    },
+    {
+      "id": "hc_sr04",
+      "name": "HC-SR04 Ultrasonic Sensor",
+      "logic_voltage": 5.0,
+      "voltage_level": "5V",
+      "keywords": ["hc-sr04", "hcsr04", "hc sr04", "ultrasonic sensor"],
+      "type": "sensor",
+      "esp32_pairing_requirement": "voltage divider or logic level shifter"
+    }
+  ]
+}
