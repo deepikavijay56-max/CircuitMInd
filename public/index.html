@@ -654,7 +654,8 @@
             power=document.getElementById('powerSource').value;
       setLoading(true);
       try{
-        const r=await fetch('/api/generate-circuit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea,skill,budget,power})});
+        const API_BASE = 'https://circuitmind-xomj.onrender.com';
+        const r=await fetch(`${API_BASE}/api/generate-circuit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea,skill,budget,power})});
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Failed to generate circuit design.');
         currentCircuitData=d;renderCircuitResult(d);
