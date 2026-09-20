@@ -43,11 +43,12 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 // Preferred Flash models in order of priority (multimodal enabled)
 const FLASH_MODELS = [
   process.env.GEMINI_MODEL,
+  'gemini-3.5-flash-lite',
   'gemini-3.5-flash',
   'gemini-3.6-flash',
+  'gemini-3.6-flash-lite',
   'gemini-3.7-flash',
-  'gemini-flash-latest',
-  'gemini-3.5-flash-lite'
+  'gemini-flash-latest'
 ].filter(Boolean);
 
 // Helper: Trims text for Gemini AI prompt token limits (< 800 words)
@@ -429,6 +430,140 @@ At least 6 components and 10 connections where the project allows.`;
     console.error("Gemini API error:", apiErr);
     return res.status(500).json({
       error: `Gemini API Error: ${apiErr.message || "Failed to communicate with AI model"}`
+    });
+  }
+});
+
+// Route: POST /api/verify-build (Build Check: Verifying physical wiring photo against generated design)
+app.post('/api/verify-build', circuitLimiter, async (req, res) => {
+  const { buildPhoto, connections, components, title } = req.body || {};
+
+  if (!apiKey || !genAI) {
+    return res.status(500).json({
+      error: "GEMINI_API_KEY is not configured on server."
+    });
+  }
+
+  // Parse image part (same pattern as componentPhoto)
+  let imagePart = null;
+  if (buildPhoto) {
+    if (typeof buildPhoto === 'string') {
+      const match = buildPhoto.match(/^data:([^;]+)(?:;[^,]*)?;base64,(.+)$/);
+      if (match) {
+        imagePart = {
+          inlineData: {
+            mimeType: match[1].toLowerCase(),
+            data: match[2]
+          }
+        };
+      } else {
+        imagePart = {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: buildPhoto
+          }
+        };
+      }
+    } else if (typeof buildPhoto === 'object' && buildPhoto.data) {
+      let rawData = buildPhoto.data;
+      let mime = (buildPhoto.mimeType || 'image/jpeg').split(';')[0].trim().toLowerCase();
+      if (typeof rawData === 'string' && rawData.startsWith('data:')) {
+        const match = rawData.match(/^data:([^;]+)(?:;[^,]*)?;base64,(.+)$/);
+        if (match) {
+          mime = match[1].toLowerCase();
+          rawData = match[2];
+        }
+      }
+      imagePart = {
+        inlineData: {
+          mimeType: mime,
+          data: rawData
+        }
+      };
+    }
+  }
+
+  if (!imagePart) {
+    return res.status(400).json({
+      error: "Please provide a clear photo of your breadboard/circuit wiring."
+    });
+  }
+
+  const connList = Array.isArray(connections) ? connections : [];
+  if (connList.length === 0) {
+    return res.status(400).json({
+      error: "No wiring table data provided to verify against."
+    });
+  }
+
+  const expectedWiringText = connList.map((c, i) => 
+    `${i + 1}. From: "${c.from}" -> To: "${c.to}" (Note: "${c.note || 'None'}")`
+  ).join('\n');
+
+  const expectedCompsText = Array.isArray(components) 
+    ? components.map(c => `- ${c.name} (${c.purpose || ''})`).join('\n')
+    : 'Not specified';
+
+  const prompt = `You are a senior electronics test and assembly engineer.
+The user has built a physical electronic circuit on a breadboard or perfboard and uploaded a photo of their physical wiring.
+Your task is to inspect this photo and compare it against the expected circuit wiring table.
+
+PROJECT: ${title || 'Electronic Circuit'}
+
+EXPECTED WIRING TABLE:
+${expectedWiringText}
+
+EXPECTED COMPONENTS:
+${expectedCompsText}
+
+INSTRUCTIONS:
+1. Examine the photo carefully to identify visible components (microcontrollers, sensors, relays, ICs, LEDs, resistors) and jumper wires.
+2. Compare the physical wiring against each entry in the expected wiring table.
+3. List which connections appear to match correctly.
+4. List which connections appear mismatched, unconnected, missing, or plugged into wrong pins/rails.
+5. Identify any visibly risky wiring issues (e.g., reversed polarity on LEDs/diodes/electrolytic capacitors, loose jumper pins, potential shorts across power rails, missing current-limiting resistors). Frame these as cautious observations, not absolute certainties, acknowledging that angles, wire colors, and clutter can obscure details.
+6. Provide a concise, helpful summary and confidence note.
+
+Reply with ONLY a JSON object, no markdown fences, no preamble, matching this exact schema:
+{
+  "status": "passed | issues_found",
+  "summary": "1-2 sentence overall visual assessment of the physical wiring",
+  "matches": ["Description of connection or component that appears correctly wired"],
+  "mismatches": ["Description of connection that appears missing, misplaced, or wrong pin"],
+  "warnings": ["Visual safety hazard, reversed polarity risk, or loose connection caution"],
+  "confidence_note": "This is an automated visual best-effort check based on your photo. Camera angles, lighting, and wire routing can hide pins. This is not a substitute for careful manual multimeter verification and should not be treated as a safety guarantee."
+}`;
+
+  try {
+    let responseText = await generateCircuitFromGemini(prompt, [imagePart]);
+    if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch (parseErr) {
+      console.error("JSON parsing error in verify-build:", parseErr, "Raw response:", responseText);
+      return res.status(500).json({
+        error: "Failed to parse inspection results from AI. Please try again with a clearer photo."
+      });
+    }
+
+    const result = {
+      status: parsed.status === 'passed' ? 'passed' : 'issues_found',
+      summary: parsed.summary || "Physical wiring visual inspection completed.",
+      matches: Array.isArray(parsed.matches) ? parsed.matches : [],
+      mismatches: Array.isArray(parsed.mismatches) ? parsed.mismatches : [],
+      warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
+      confidence_note: parsed.confidence_note || "This is a visual best-effort check, not a substitute for careful manual verification, and should not be treated as a safety guarantee."
+    };
+
+    return res.json(result);
+  } catch (err) {
+    console.error("Error in verify-build:", err);
+    return res.status(500).json({
+      error: `Verification error: ${err.message || "Failed to inspect photo"}`
     });
   }
 });

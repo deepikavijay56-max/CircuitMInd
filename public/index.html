@@ -493,6 +493,79 @@
       filter:drop-shadow(0 0 6px rgba(45,212,191,0.35));
     }
 
+    /* Build Check Physical Verification Section */
+    .build-check-section{border-left:3px solid var(--teal);}
+    .build-check-subtitle{font-size:.88rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1.15rem;}
+    .build-check-upload-area{
+      background:var(--bg-canvas);border:1px solid var(--border-subtle);
+      border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:1.2rem;
+    }
+    .build-check-input-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
+    .btn-check-submit{
+      background:var(--teal);color:#E8F0EF;border:1px solid var(--teal);
+      border-radius:6px;padding:.5rem 1.1rem;font-size:.78rem;font-weight:700;
+      cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+      font-family:var(--font-mono);letter-spacing:.02em;transition:all .15s ease;
+    }
+    .btn-check-submit:hover:not(:disabled){
+      filter:brightness(1.12);box-shadow:0 4px 14px var(--teal-glow);
+    }
+    .btn-check-submit:disabled{opacity:.55;cursor:not-allowed;}
+    .build-check-loading{
+      margin-top:.85rem;display:inline-flex;align-items:center;gap:.6rem;
+      font-family:var(--font-mono);font-size:.82rem;color:var(--teal-bright);
+    }
+    .build-check-results-card{
+      margin-top:1.25rem;padding:1.25rem;border-radius:8px;background:var(--bg-surface-elevated);
+      border:1px solid var(--border-accent);animation:sectionFadeUp .35s ease forwards;
+    }
+    .build-check-header-badge{
+      display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .75rem;
+      border-radius:5px;font-family:var(--font-mono);font-size:.75rem;font-weight:700;
+      letter-spacing:.04em;text-transform:uppercase;margin-bottom:.8rem;
+    }
+    .badge-passed{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.35);}
+    .badge-issues{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.35);}
+    .build-check-summary{font-size:.92rem;color:var(--text-primary);line-height:1.6;margin-bottom:1.15rem;}
+    
+    .build-check-grid{
+      display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.25rem;
+    }
+    .build-check-col{
+      background:var(--bg-canvas);border:1px solid var(--border-subtle);
+      border-radius:6px;padding:1rem;display:flex;flex-direction:column;gap:.6rem;
+    }
+    .col-matches{border-top:3px solid var(--green);}
+    .col-mismatches{border-top:3px solid var(--amber);}
+    .col-warnings{border-top:3px solid var(--red);}
+    .build-check-col-title{
+      font-family:var(--font-mono);font-size:.75rem;font-weight:700;
+      display:flex;align-items:center;gap:.45rem;color:var(--text-primary);
+    }
+    .status-indicator-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+    .dot-match{background:var(--green);}
+    .dot-mismatch{background:var(--amber);}
+    .dot-warning{background:var(--red);}
+    .build-check-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.45rem;}
+    .build-check-list li{
+      font-size:.82rem;line-height:1.5;color:var(--text-secondary);padding:.35rem .5rem;
+      border-radius:4px;background:rgba(255,255,255,0.02);border:1px solid var(--border-subtle);
+    }
+    .build-check-list li.empty-item{font-style:italic;color:var(--text-muted);border:none;background:none;}
+    .col-matches .build-check-list li{border-left:2px solid var(--green);}
+    .col-mismatches .build-check-list li{border-left:2px solid var(--amber);color:#fde047;}
+    .col-warnings .build-check-list li{border-left:2px solid var(--red);color:#fca5a5;}
+    
+    .build-check-disclaimer-box{
+      background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);
+      border-radius:6px;padding:.85rem 1.1rem;
+    }
+    .disclaimer-title{
+      font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--amber);
+      display:flex;align-items:center;gap:.4rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;
+    }
+    .disclaimer-text{font-size:.82rem;color:var(--text-secondary);line-height:1.55;margin:0;}
+
     @media(max-width:768px){
       .nav-container{padding:.7rem 1rem;}
       main{padding:1.75rem 1rem 4rem;}
@@ -821,6 +894,122 @@
         </div>
       </section>
 
+      <!-- Build Check: Physical Wiring Verification -->
+      <section id="sectionBuildCheck" class="output-section build-check-section">
+        <div class="section-header">
+          <div class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Build Check &mdash; Physical Wiring Verification
+          </div>
+          <span class="section-ref">CHECK</span>
+        </div>
+
+        <p class="build-check-subtitle">
+          Wired your breadboard? Take a clear, top-down photo of your physical circuit. CircuitMind will analyze the visible wires and component pins against the wiring table to catch misplaced jumpers or polarity issues before you power on.
+        </p>
+
+        <!-- Upload & Action Area -->
+        <div class="build-check-upload-area">
+          <div class="build-check-input-row">
+            <label for="buildCheckPhotoInput" class="upload-btn-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>Choose Breadboard Photo</span>
+            </label>
+            <input type="file" id="buildCheckPhotoInput" accept="image/*" class="file-input-hidden" />
+            
+            <button type="button" id="runBuildCheckBtn" class="btn-check-submit" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span id="buildCheckBtnText">Verify Physical Wiring</span>
+            </button>
+          </div>
+
+          <!-- Selected Photo Preview Card -->
+          <div id="buildCheckPreviewContainer" class="photo-preview-container" style="display:none;">
+            <div class="photo-preview-card">
+              <img id="buildCheckPreviewImg" src="" alt="Breadboard wiring photo" class="photo-preview-thumb" />
+              <div class="photo-preview-info">
+                <span id="buildCheckPreviewName" class="photo-name"></span>
+                <span class="photo-tag">&#128247; Ready for Inspection</span>
+              </div>
+              <button type="button" id="removeBuildCheckPhotoBtn" class="photo-remove-btn" title="Remove photo" aria-label="Remove photo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading Indicator -->
+          <div id="buildCheckLoading" class="build-check-loading" style="display:none;">
+            <span class="pulse-dot"></span>
+            <span id="buildCheckProgressText">Analyzing breadboard wires and pin connections...</span>
+          </div>
+
+          <!-- Error Alert -->
+          <div id="buildCheckError" class="error-box" style="display:none;margin-top:.85rem;" role="alert">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="buildCheckErrorMessage"></span>
+          </div>
+        </div>
+
+        <!-- Inspection Results Card -->
+        <div id="buildCheckResultsCard" class="build-check-results-card" style="display:none;">
+          <div class="build-check-header-badge" id="buildCheckStatusBadge">
+            <span id="buildCheckStatusIcon"></span>
+            <span id="buildCheckStatusText"></span>
+          </div>
+          <p id="buildCheckSummaryText" class="build-check-summary"></p>
+
+          <div class="build-check-grid">
+            <!-- Matches Column -->
+            <div class="build-check-col col-matches">
+              <div class="build-check-col-title">
+                <span class="status-indicator-dot dot-match"></span>
+                <span>Visually Confirmed Matches (<span id="matchesCount">0</span>)</span>
+              </div>
+              <ul id="buildCheckMatchesList" class="build-check-list"></ul>
+            </div>
+
+            <!-- Mismatches / Missing Column -->
+            <div class="build-check-col col-mismatches">
+              <div class="build-check-col-title">
+                <span class="status-indicator-dot dot-mismatch"></span>
+                <span>Mismatches or Missing Wires (<span id="mismatchesCount">0</span>)</span>
+              </div>
+              <ul id="buildCheckMismatchesList" class="build-check-list"></ul>
+            </div>
+
+            <!-- Safety Risk Warnings Column -->
+            <div class="build-check-col col-warnings">
+              <div class="build-check-col-title">
+                <span class="status-indicator-dot dot-warning"></span>
+                <span>Wiring &amp; Polarity Cautions (<span id="warningsCount">0</span>)</span>
+              </div>
+              <ul id="buildCheckWarningsList" class="build-check-list"></ul>
+            </div>
+          </div>
+
+          <!-- Confidence / Disclaimer Callout -->
+          <div class="build-check-disclaimer-box">
+            <div class="disclaimer-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              Inspection Confidence &amp; Safety Notice
+            </div>
+            <p id="buildCheckConfidenceText" class="disclaimer-text"></p>
+          </div>
+        </div>
+      </section>
+
       <section id="sectionBuildSteps" class="output-section">
         <div class="section-header">
           <div class="section-title">
@@ -1050,6 +1239,259 @@
     voiceRecordBtn.addEventListener('click', toggleVoiceRecording);
     discardVoiceBtn.addEventListener('click', discardVoiceNote);
 
+    // ==========================================
+    // BUILD CHECK: Physical Wiring Verification
+    // ==========================================
+    const buildCheckPhotoInput = document.getElementById('buildCheckPhotoInput'),
+          runBuildCheckBtn = document.getElementById('runBuildCheckBtn'),
+          buildCheckBtnText = document.getElementById('buildCheckBtnText'),
+          buildCheckPreviewContainer = document.getElementById('buildCheckPreviewContainer'),
+          buildCheckPreviewImg = document.getElementById('buildCheckPreviewImg'),
+          buildCheckPreviewName = document.getElementById('buildCheckPreviewName'),
+          removeBuildCheckPhotoBtn = document.getElementById('removeBuildCheckPhotoBtn'),
+          buildCheckLoading = document.getElementById('buildCheckLoading'),
+          buildCheckProgressText = document.getElementById('buildCheckProgressText'),
+          buildCheckError = document.getElementById('buildCheckError'),
+          buildCheckErrorMessage = document.getElementById('buildCheckErrorMessage'),
+          buildCheckResultsCard = document.getElementById('buildCheckResultsCard'),
+          buildCheckStatusBadge = document.getElementById('buildCheckStatusBadge'),
+          buildCheckStatusIcon = document.getElementById('buildCheckStatusIcon'),
+          buildCheckStatusText = document.getElementById('buildCheckStatusText'),
+          buildCheckSummaryText = document.getElementById('buildCheckSummaryText'),
+          buildCheckMatchesList = document.getElementById('buildCheckMatchesList'),
+          buildCheckMismatchesList = document.getElementById('buildCheckMismatchesList'),
+          buildCheckWarningsList = document.getElementById('buildCheckWarningsList'),
+          matchesCount = document.getElementById('matchesCount'),
+          mismatchesCount = document.getElementById('mismatchesCount'),
+          warningsCount = document.getElementById('warningsCount'),
+          buildCheckConfidenceText = document.getElementById('buildCheckConfidenceText');
+
+    let attachedBuildCheckPhotoBase64 = null;
+    let buildCheckLoadingTimer = null;
+    const BUILD_CHECK_STEPS = [
+      "Analyzing breadboard photo and components...",
+      "Tracing jumper wires and breadboard rows...",
+      "Comparing physical connections to wiring table...",
+      "Checking component polarities and safety risks..."
+    ];
+
+    function showBuildCheckError(msg) {
+      if (buildCheckErrorMessage) buildCheckErrorMessage.textContent = msg;
+      if (buildCheckError) buildCheckError.style.display = 'flex';
+    }
+
+    function hideBuildCheckError() {
+      if (buildCheckError) buildCheckError.style.display = 'none';
+    }
+
+    function resetBuildCheckUI() {
+      attachedBuildCheckPhotoBase64 = null;
+      if (buildCheckLoadingTimer) {
+        clearInterval(buildCheckLoadingTimer);
+        buildCheckLoadingTimer = null;
+      }
+      if (buildCheckPhotoInput) buildCheckPhotoInput.value = '';
+      if (buildCheckPreviewImg) buildCheckPreviewImg.src = '';
+      if (buildCheckPreviewName) buildCheckPreviewName.textContent = '';
+      if (buildCheckPreviewContainer) buildCheckPreviewContainer.style.display = 'none';
+      if (runBuildCheckBtn) {
+        runBuildCheckBtn.disabled = true;
+        if (buildCheckBtnText) buildCheckBtnText.textContent = 'Verify Physical Wiring';
+      }
+      if (buildCheckLoading) buildCheckLoading.style.display = 'none';
+      hideBuildCheckError();
+      if (buildCheckResultsCard) buildCheckResultsCard.style.display = 'none';
+    }
+
+    if (buildCheckPhotoInput) {
+      buildCheckPhotoInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          showBuildCheckError('Please select a valid image file (PNG, JPG, WEBP).');
+          buildCheckPhotoInput.value = '';
+          return;
+        }
+        hideBuildCheckError();
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          attachedBuildCheckPhotoBase64 = evt.target.result;
+          if (buildCheckPreviewImg) buildCheckPreviewImg.src = attachedBuildCheckPhotoBase64;
+          if (buildCheckPreviewName) buildCheckPreviewName.textContent = file.name;
+          if (buildCheckPreviewContainer) buildCheckPreviewContainer.style.display = 'block';
+          if (runBuildCheckBtn) runBuildCheckBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (removeBuildCheckPhotoBtn) {
+      removeBuildCheckPhotoBtn.addEventListener('click', () => {
+        attachedBuildCheckPhotoBase64 = null;
+        if (buildCheckPhotoInput) buildCheckPhotoInput.value = '';
+        if (buildCheckPreviewImg) buildCheckPreviewImg.src = '';
+        if (buildCheckPreviewName) buildCheckPreviewName.textContent = '';
+        if (buildCheckPreviewContainer) buildCheckPreviewContainer.style.display = 'none';
+        if (runBuildCheckBtn) runBuildCheckBtn.disabled = true;
+        hideBuildCheckError();
+      });
+    }
+
+    if (runBuildCheckBtn) {
+      runBuildCheckBtn.addEventListener('click', async () => {
+        if (!attachedBuildCheckPhotoBase64) {
+          showBuildCheckError('Please select or capture a photo of your wired breadboard first.');
+          return;
+        }
+        if (!currentCircuitData || !Array.isArray(currentCircuitData.connections) || currentCircuitData.connections.length === 0) {
+          showBuildCheckError('No active circuit wiring table found. Generate a circuit design first.');
+          return;
+        }
+
+        hideBuildCheckError();
+        runBuildCheckBtn.disabled = true;
+        if (buildCheckBtnText) buildCheckBtnText.textContent = 'Inspecting...';
+        if (buildCheckLoading) buildCheckLoading.style.display = 'inline-flex';
+        if (buildCheckResultsCard) buildCheckResultsCard.style.display = 'none';
+
+        let stepIdx = 0;
+        if (buildCheckProgressText) buildCheckProgressText.textContent = BUILD_CHECK_STEPS[0];
+        buildCheckLoadingTimer = setInterval(() => {
+          stepIdx = (stepIdx + 1) % BUILD_CHECK_STEPS.length;
+          if (buildCheckProgressText) buildCheckProgressText.textContent = BUILD_CHECK_STEPS[stepIdx];
+        }, 1800);
+
+        try {
+          const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? ''
+            : 'https://circuitmind-xomj.onrender.com';
+
+          const res = await fetch(`${API_BASE}/api/verify-build`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              buildPhoto: attachedBuildCheckPhotoBase64,
+              connections: currentCircuitData.connections,
+              components: currentCircuitData.components,
+              title: currentCircuitData.title
+            })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to verify physical wiring.');
+          }
+
+          renderBuildCheckResults(data);
+        } catch (err) {
+          console.error('Build Check error:', err);
+          showBuildCheckError(err.message || 'Error verifying wiring. Please check your photo and connection.');
+        } finally {
+          if (buildCheckLoadingTimer) {
+            clearInterval(buildCheckLoadingTimer);
+            buildCheckLoadingTimer = null;
+          }
+          if (buildCheckLoading) buildCheckLoading.style.display = 'none';
+          runBuildCheckBtn.disabled = false;
+          if (buildCheckBtnText) buildCheckBtnText.textContent = 'Verify Physical Wiring';
+        }
+      });
+    }
+
+    function renderBuildCheckResults(data) {
+      if (!buildCheckResultsCard) return;
+
+      const matches = Array.isArray(data.matches) ? data.matches : [];
+      const mismatches = Array.isArray(data.mismatches) ? data.mismatches : [];
+      const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+      const isPassed = data.status === 'passed' && mismatches.length === 0 && warnings.length === 0;
+
+      // Status Badge
+      if (buildCheckStatusBadge) {
+        buildCheckStatusBadge.className = 'build-check-header-badge ' + (isPassed ? 'badge-passed' : 'badge-issues');
+      }
+      if (buildCheckStatusIcon) {
+        buildCheckStatusIcon.innerHTML = isPassed
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      }
+      if (buildCheckStatusText) {
+        buildCheckStatusText.textContent = isPassed
+          ? 'Physical Wiring: Visually Verified'
+          : (mismatches.length > 0 || warnings.length > 0
+              ? 'Physical Wiring: Discrepancies or Cautions Identified'
+              : 'Physical Wiring: Inspection Completed');
+      }
+
+      // Summary
+      if (buildCheckSummaryText) {
+        buildCheckSummaryText.textContent = data.summary || 'Visual inspection of physical circuit breadboard completed.';
+      }
+
+      // Matches List
+      if (matchesCount) matchesCount.textContent = matches.length;
+      if (buildCheckMatchesList) {
+        buildCheckMatchesList.innerHTML = '';
+        if (matches.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'empty-item';
+          li.textContent = 'No connections could be unambiguously confirmed from this angle/resolution.';
+          buildCheckMatchesList.appendChild(li);
+        } else {
+          matches.forEach(m => {
+            const li = document.createElement('li');
+            li.textContent = m;
+            buildCheckMatchesList.appendChild(li);
+          });
+        }
+      }
+
+      // Mismatches List
+      if (mismatchesCount) mismatchesCount.textContent = mismatches.length;
+      if (buildCheckMismatchesList) {
+        buildCheckMismatchesList.innerHTML = '';
+        if (mismatches.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'empty-item';
+          li.textContent = 'No obvious missing wires or pin mismatches identified.';
+          buildCheckMismatchesList.appendChild(li);
+        } else {
+          mismatches.forEach(m => {
+            const li = document.createElement('li');
+            li.textContent = m;
+            buildCheckMismatchesList.appendChild(li);
+          });
+        }
+      }
+
+      // Warnings List
+      if (warningsCount) warningsCount.textContent = warnings.length;
+      if (buildCheckWarningsList) {
+        buildCheckWarningsList.innerHTML = '';
+        if (warnings.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'empty-item';
+          li.textContent = 'No visible reversed polarities, loose pins, or short circuit hazards observed.';
+          buildCheckWarningsList.appendChild(li);
+        } else {
+          warnings.forEach(w => {
+            const li = document.createElement('li');
+            li.textContent = w;
+            buildCheckWarningsList.appendChild(li);
+          });
+        }
+      }
+
+      // Confidence & Safety Disclaimer Note
+      if (buildCheckConfidenceText) {
+        buildCheckConfidenceText.textContent = data.confidence_note || 
+          "This is an automated visual best-effort check based on your photo. Camera angles, lighting, and wire routing can hide pins. This is not a substitute for careful manual verification, and should not be treated as a safety guarantee.";
+      }
+
+      buildCheckResultsCard.style.display = 'block';
+      buildCheckResultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     document.querySelectorAll('.chip-btn').forEach(b=>b.addEventListener('click',()=>{
       projectIdeaInput.value=b.getAttribute('data-idea');adjustH();hideError();projectIdeaInput.focus();
     }));
@@ -1139,6 +1581,9 @@
     });
 
     function renderCircuitResult(d){
+      // Reset physical wiring Build Check state for new circuit
+      resetBuildCheckUI();
+
       // Voice input transcription display
       const tb = document.getElementById('transcriptionBox');
       const tt = document.getElementById('transcriptionText');
