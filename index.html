@@ -371,6 +371,60 @@
       background:rgba(20,184,166,0.15);padding:.1rem .35rem;border-radius:3px;margin-left:.4rem;
       vertical-align:middle;letter-spacing:.04em;font-weight:600;
     }
+    /* Voice Input Feature */
+    .voice-btn{
+      background:var(--bg-surface-elevated);border:1px solid var(--border-accent);
+      color:var(--text-secondary);padding:.28rem .65rem;border-radius:5px;font-size:.73rem;
+      cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:.4rem;
+      font-family:var(--font-mono);transition:all .15s ease;
+    }
+    .voice-btn:hover{background:var(--teal-faint);color:var(--teal-bright);border-color:var(--teal);}
+    .voice-btn.recording{
+      background:rgba(244,63,94,0.12);border-color:var(--red);color:var(--red);
+      animation:pulseRedRing 1.5s infinite;
+    }
+    .rec-pulse-dot{
+      display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;
+      animation:pulseRec 1s infinite ease-in-out;flex-shrink:0;
+    }
+    @keyframes pulseRec{
+      0%,100%{transform:scale(.85);opacity:.5;box-shadow:0 0 4px var(--red);}
+      50%{transform:scale(1.3);opacity:1;box-shadow:0 0 10px var(--red);}
+    }
+    @keyframes pulseRedRing{
+      0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,0.4);border-color:var(--red);}
+      50%{box-shadow:0 0 0 4px rgba(244,63,94,0.18);border-color:var(--red);}
+    }
+    .voice-note-card{
+      display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+      padding:.55rem .85rem;margin-top:.65rem;background:rgba(20,184,166,0.08);
+      border:1px solid rgba(20,184,166,0.35);border-radius:6px;
+    }
+    .voice-note-left{display:flex;align-items:center;gap:.65rem;}
+    .voice-waveform-icon{color:var(--teal-bright);display:flex;align-items:center;justify-content:center;}
+    .voice-note-meta{display:flex;flex-direction:column;gap:.1rem;}
+    .voice-note-title{font-family:var(--font-mono);font-size:.74rem;font-weight:700;color:var(--teal-bright);}
+    .voice-note-sub{font-family:var(--font-sans);font-size:.69rem;color:var(--text-muted);}
+    .voice-note-actions{display:flex;align-items:center;gap:.4rem;}
+    .voice-discard-btn{
+      background:none;border:none;color:var(--text-muted);cursor:pointer;padding:.25rem;
+      border-radius:4px;display:flex;align-items:center;justify-content:center;transition:color .15s ease;
+    }
+    .voice-discard-btn:hover{color:var(--red);}
+
+    /* Voice Transcription Result Box */
+    .transcription-box{
+      margin-bottom:1.15rem;padding:.8rem 1.1rem;background:rgba(20,184,166,0.08);
+      border:1px solid rgba(20,184,166,0.3);border-left:3px solid var(--teal);
+      border-radius:6px;font-family:var(--font-sans);
+    }
+    .transcription-badge{
+      display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);
+      font-size:.68rem;font-weight:700;color:var(--teal-bright);text-transform:uppercase;
+      letter-spacing:.06em;margin-bottom:.35rem;
+    }
+    .transcription-content{font-size:.92rem;color:var(--text-primary);line-height:1.55;}
+    .transcription-prefix{font-weight:700;color:var(--teal-bright);font-family:var(--font-mono);font-size:.82rem;}
 
     @media(max-width:768px){
       .nav-container{padding:.7rem 1rem;}
@@ -433,11 +487,43 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
               Project Idea &amp; Scope
             </label>
+            <button type="button" id="voiceRecordBtn" class="voice-btn" title="Speak your project idea instead">
+              <span id="voiceBtnIcon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </span>
+              <span id="voiceBtnText">Speak your idea instead</span>
+            </button>
           </div>
           <div class="textarea-wrapper">
             <textarea id="projectIdea" name="idea"
-              placeholder="e.g. Automatic plant watering system with capacitive soil moisture sensor, 5V mini pump via relay, 0.96-inch OLED display for readings, and low-tank alerts..."
-              required></textarea>
+              placeholder="e.g. Automatic plant watering system with capacitive soil moisture sensor, 5V mini pump via relay, 0.96-inch OLED display for readings, and low-tank alerts..."></textarea>
+          </div>
+          <!-- Voice Note Attached Card -->
+          <div id="voiceNoteCard" class="voice-note-card" style="display:none;">
+            <div class="voice-note-left">
+              <div class="voice-waveform-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v20M17 5v14M7 5v14M2 10v4M22 10v4"/>
+                </svg>
+              </div>
+              <div class="voice-note-meta">
+                <span class="voice-note-title">Voice note attached</span>
+                <span class="voice-note-sub">Voice input will replace typed text as primary idea</span>
+              </div>
+            </div>
+            <div class="voice-note-actions">
+              <button type="button" id="discardVoiceBtn" class="voice-discard-btn" title="Discard voice note" aria-label="Discard voice note">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="chips-section">
             <span class="chips-label">Try:</span>
@@ -531,6 +617,22 @@
 
     <div id="outputArea">
       <section id="sectionTitleSummary" class="output-section result-hero">
+        <!-- Voice Input Transcription Display -->
+        <div id="transcriptionBox" class="transcription-box" style="display:none;">
+          <div class="transcription-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span>Voice Input Transcription</span>
+          </div>
+          <div class="transcription-content">
+            <span class="transcription-prefix">We heard:</span> &ldquo;<span id="transcriptionText"></span>&rdquo;
+          </div>
+        </div>
+
         <div class="result-title-label">Synthesized Architecture</div>
         <h3 id="circuitTitle" class="result-title"></h3>
         <p id="circuitSummary" class="result-summary"></p>
@@ -698,6 +800,7 @@
       btnText=document.getElementById('btnText'),errorBox=document.getElementById('errorBox'),
       errorMessage=document.getElementById('errorMessage'),outputArea=document.getElementById('outputArea');
     let currentCircuitData=null,loadingStepTimer=null,attachedPhotoBase64=null;
+    let attachedVoiceBase64=null,attachedVoiceMimeType=null,mediaRecorder=null,audioChunks=[],isRecording=false,activeMediaStream=null;
     const STEPS=["Analyzing your idea...","Selecting components...","Calculating values...","Finalizing design..."];
 
     const componentPhotoInput=document.getElementById('componentPhotoInput'),
@@ -732,6 +835,120 @@
       photoPreviewName.textContent='';
       photoPreviewContainer.style.display='none';
     });
+
+    // Voice Input & MediaRecorder Handler
+    const voiceRecordBtn=document.getElementById('voiceRecordBtn'),
+          voiceBtnIcon=document.getElementById('voiceBtnIcon'),
+          voiceBtnText=document.getElementById('voiceBtnText'),
+          voiceNoteCard=document.getElementById('voiceNoteCard'),
+          discardVoiceBtn=document.getElementById('discardVoiceBtn');
+
+    async function toggleVoiceRecording(){
+      if(isRecording){
+        stopVoiceRecording();
+      } else {
+        await startVoiceRecording();
+      }
+    }
+
+    async function startVoiceRecording(){
+      hideError();
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        showError('Voice input is not supported in this browser.');
+        return;
+      }
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        activeMediaStream = stream;
+
+        let mime = 'audio/webm';
+        if(typeof MediaRecorder !== 'undefined'){
+          if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')){
+            mime = 'audio/webm;codecs=opus';
+          } else if(MediaRecorder.isTypeSupported('audio/webm')){
+            mime = 'audio/webm';
+          } else if(MediaRecorder.isTypeSupported('audio/mp4')){
+            mime = 'audio/mp4';
+          } else if(MediaRecorder.isTypeSupported('audio/ogg')){
+            mime = 'audio/ogg';
+          }
+        }
+        attachedVoiceMimeType = mime.split(';')[0];
+
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if(event.data && event.data.size > 0){
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: attachedVoiceMimeType || 'audio/webm' });
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            attachedVoiceBase64 = reader.result;
+            voiceNoteCard.style.display = 'flex';
+            resetVoiceBtn();
+          };
+          reader.readAsDataURL(audioBlob);
+
+          if(activeMediaStream){
+            activeMediaStream.getTracks().forEach(track => track.stop());
+            activeMediaStream = null;
+          }
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        voiceRecordBtn.classList.add('recording');
+        voiceBtnIcon.innerHTML = '<span class="rec-pulse-dot"></span>';
+        voiceBtnText.textContent = 'Recording... tap to stop';
+      } catch(err){
+        console.error('Microphone error:', err);
+        isRecording = false;
+        resetVoiceBtn();
+        if(err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'){
+          showError('Microphone permission denied. Please allow microphone access in your browser to speak your project idea.');
+        } else {
+          showError('Could not access microphone: ' + (err.message || 'Unknown error'));
+        }
+      }
+    }
+
+    function stopVoiceRecording(){
+      if(mediaRecorder && mediaRecorder.state !== 'inactive'){
+        mediaRecorder.stop();
+      }
+      isRecording = false;
+      voiceBtnText.textContent = 'Processing audio...';
+    }
+
+    function resetVoiceBtn(){
+      isRecording = false;
+      voiceRecordBtn.classList.remove('recording');
+      voiceBtnIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+      voiceBtnText.textContent = attachedVoiceBase64 ? 'Re-record voice note' : 'Speak your idea instead';
+    }
+
+    function discardVoiceNote(){
+      if(isRecording && mediaRecorder && mediaRecorder.state !== 'inactive'){
+        mediaRecorder.stop();
+      }
+      if(activeMediaStream){
+        activeMediaStream.getTracks().forEach(track => track.stop());
+        activeMediaStream = null;
+      }
+      attachedVoiceBase64 = null;
+      attachedVoiceMimeType = null;
+      audioChunks = [];
+      voiceNoteCard.style.display = 'none';
+      resetVoiceBtn();
+    }
+
+    voiceRecordBtn.addEventListener('click', toggleVoiceRecording);
+    discardVoiceBtn.addEventListener('click', discardVoiceNote);
 
     document.querySelectorAll('.chip-btn').forEach(b=>b.addEventListener('click',()=>{
       projectIdeaInput.value=b.getAttribute('data-idea');adjustH();hideError();projectIdeaInput.focus();
@@ -784,8 +1001,17 @@
 
     circuitForm.addEventListener('submit',async(e)=>{
       e.preventDefault();hideError();
+      if(isRecording){
+        stopVoiceRecording();
+        showError('Voice recording in progress. Please tap to stop recording before generating.');
+        return;
+      }
       const idea=projectIdeaInput.value.trim();
-      if(idea.length<15){showError('Please provide at least 15 characters.');projectIdeaInput.focus();return;}
+      if(!attachedVoiceBase64 && idea.length<15){
+        showError('Please describe your project (at least 15 characters) or record a voice note.');
+        projectIdeaInput.focus();
+        return;
+      }
       const skill=document.getElementById('skillLevel').value,
             budget=document.getElementById('budget').value,
             power=document.getElementById('powerSource').value;
@@ -798,6 +1024,12 @@
         if (attachedPhotoBase64) {
           payload.componentPhoto = attachedPhotoBase64;
         }
+        if (attachedVoiceBase64) {
+          payload.voiceInput = {
+            data: attachedVoiceBase64,
+            mimeType: attachedVoiceMimeType || 'audio/webm'
+          };
+        }
         const r=await fetch(`${API_BASE}/api/generate-circuit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Failed to generate circuit design.');
@@ -807,6 +1039,18 @@
     });
 
     function renderCircuitResult(d){
+      // Voice input transcription display
+      const tb = document.getElementById('transcriptionBox');
+      const tt = document.getElementById('transcriptionText');
+      if (tb && tt) {
+        if (d.transcribed_idea && d.transcribed_idea.trim().length > 0) {
+          tt.textContent = d.transcribed_idea;
+          tb.style.display = 'block';
+        } else {
+          tb.style.display = 'none';
+        }
+      }
+
       document.getElementById('circuitTitle').textContent=d.title||'Custom Circuit Design';
       document.getElementById('circuitSummary').textContent=d.summary||'';
 

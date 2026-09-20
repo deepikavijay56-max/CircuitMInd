@@ -42,9 +42,11 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 // Preferred Flash models in order of priority (multimodal enabled)
 const FLASH_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-  'gemini-2.0-flash',
+  process.env.GEMINI_MODEL,
+  'gemini-3.5-flash',
   'gemini-3.6-flash',
+  'gemini-3.7-flash',
+  'gemini-flash-latest',
   'gemini-3.5-flash-lite'
 ].filter(Boolean);
 
@@ -59,14 +61,11 @@ function trimPromptForGemini(text, maxWords = 800) {
   return text.trim();
 }
 
-// Resilient helper to call Gemini with retry & model fallback (supports multimodal image input)
-async function generateCircuitFromGemini(prompt, imagePart = null) {
+// Resilient helper to call Gemini with retry & model fallback (supports multimodal audio + image input)
+async function generateCircuitFromGemini(prompt, extraParts = []) {
   let lastError;
 
-  const contentParts = [prompt];
-  if (imagePart) {
-    contentParts.push(imagePart);
-  }
+  const contentParts = [prompt, ...(Array.isArray(extraParts) ? extraParts : [extraParts]).filter(Boolean)];
 
   for (const modelName of FLASH_MODELS) {
     for (let attempt = 1; attempt <= 2; attempt++) {
@@ -228,20 +227,63 @@ function verifyCircuitDesign(design) {
 
 // Route: POST /api/generate-circuit (with rate limiting)
 app.post('/api/generate-circuit', circuitLimiter, async (req, res) => {
-  const { idea, skill, budget, power, componentPhoto } = req.body || {};
-
-  // Validation: Idea must be at least 15 characters, no maximum limit
-  if (!idea || typeof idea !== 'string' || idea.trim().length < 15) {
-    return res.status(400).json({
-      error: "Project idea must be at least 15 characters long."
-    });
-  }
+  const { idea, skill, budget, power, componentPhoto, voiceInput } = req.body || {};
 
   // Ensure Gemini API key is configured
   if (!apiKey || !genAI) {
     console.error("GEMINI_API_KEY is not configured in .env");
     return res.status(500).json({
       error: "GEMINI_API_KEY is missing or not configured. Please set GEMINI_API_KEY in your .env file."
+    });
+  }
+
+  // Parse optional multimodal voiceInput (Audio Note)
+  let audioPart = null;
+  if (voiceInput) {
+    if (typeof voiceInput === 'string') {
+      const match = voiceInput.match(/^data:([^;]+)(?:;[^,]*)?;base64,(.+)$/);
+      if (match) {
+        audioPart = {
+          inlineData: {
+            mimeType: match[1].toLowerCase(),
+            data: match[2]
+          }
+        };
+      } else {
+        audioPart = {
+          inlineData: {
+            mimeType: 'audio/webm',
+            data: voiceInput
+          }
+        };
+      }
+    } else if (typeof voiceInput === 'object' && voiceInput.data) {
+      let rawData = voiceInput.data;
+      let mime = (voiceInput.mimeType || 'audio/webm').split(';')[0].trim().toLowerCase();
+      if (typeof rawData === 'string' && rawData.startsWith('data:')) {
+        const match = rawData.match(/^data:([^;]+)(?:;[^,]*)?;base64,(.+)$/);
+        if (match) {
+          mime = match[1].toLowerCase();
+          rawData = match[2];
+        }
+      }
+      audioPart = {
+        inlineData: {
+          mimeType: mime,
+          data: rawData
+        }
+      };
+    }
+  }
+
+  const hasVoice = !!audioPart;
+  const wordCount = (idea && typeof idea === 'string') ? idea.trim().split(/\s+/).filter(Boolean).length : 0;
+  const hasTextIdea = wordCount >= 4;
+
+  // Validation: require EITHER idea text (4+ words) OR voiceInput to be present
+  if (!hasVoice && !hasTextIdea) {
+    return res.status(400).json({
+      error: "Please provide a project description (at least 4 words) or record a voice note."
     });
   }
 
@@ -286,8 +328,17 @@ app.post('/api/generate-circuit', circuitLimiter, async (req, res) => {
 
   const hasPhoto = !!imagePart;
 
-  // Prepare prompt with trimmed idea for token safety
-  const promptIdea = trimPromptForGemini(idea, 800);
+  // Prepare prompt for voice or text input
+  let ideaInstruction = "";
+  if (hasVoice) {
+    ideaInstruction = `VOICE AUDIO INPUT ATTACHED:
+The user has attached an audio voice note describing their project idea.
+Transcribe this audio and treat the transcription as the user's project idea description. If the audio is in Tamil, Hindi, or English, transcribe and understand it in its original language, then proceed with circuit design as normal in English output.
+In your JSON response, set the "transcribed_idea" field to the exact English transcription / interpretation of what the user described in the voice note.`;
+  } else {
+    const promptIdea = trimPromptForGemini(idea, 800);
+    ideaInstruction = `PROJECT IDEA: ${promptIdea}`;
+  }
 
   const photoInstruction = hasPhoto ? `
 SPARE COMPONENTS PHOTO ATTACHED:
@@ -301,7 +352,7 @@ The user has attached a photo of components they already own. Identify which com
   const prompt = `You are a senior embedded hardware engineer in India. Design a complete,
 buildable electronic circuit for this project.
 
-PROJECT IDEA: ${promptIdea}
+${ideaInstruction}
 BUILDER EXPERIENCE: ${skill || 'Beginner'}
 BUDGET: ${budget || 'Under ₹1,000'}
 POWER: ${power || 'Let system decide'}
@@ -310,7 +361,8 @@ Use real, commonly available parts (ESP32, Arduino Uno/Nano, HC-SR04, DHT22,
 relay modules, etc.). Give real pin names. Prices in Indian Rupees.
 Reply with ONLY a JSON object, no markdown fences, no preamble, matching
 this exact schema:
-{"title":"","summary":"2-3 sentences","blocks":[{"name":"","role":""}],
+{"transcribed_idea":"${hasVoice ? 'English transcription of spoken voice note' : ''}",
+"title":"","summary":"2-3 sentences","blocks":[{"name":"","role":""}],
 "block_diagram":"ASCII block diagram using +--+ boxes and --> arrows, max 70 chars wide",
 ${componentsSchema},
 "total_cost":"₹X approx",
@@ -323,7 +375,8 @@ ${componentsSchema},
 At least 6 components and 10 connections where the project allows.`;
 
   try {
-    let responseText = await generateCircuitFromGemini(prompt, imagePart);
+    const extraParts = [audioPart, imagePart].filter(Boolean);
+    let responseText = await generateCircuitFromGemini(prompt, extraParts);
 
     // Strip ```json and ``` fences if present
     if (responseText.startsWith('```')) {
@@ -353,11 +406,13 @@ At least 6 components and 10 connections where the project allows.`;
     const sanitizedResponse = {
       title: parsedData.title || "Custom Circuit Design",
       summary: parsedData.summary || "",
+      transcribed_idea: parsedData.transcribed_idea || "",
+      has_voice_input: hasVoice,
+      has_spare_parts: hasPhoto,
       blocks: Array.isArray(parsedData.blocks) ? parsedData.blocks : [],
       block_diagram: parsedData.block_diagram || "",
       components: sanitizedComponents,
       total_cost: parsedData.total_cost || "N/A",
-      has_spare_parts: hasPhoto,
       connections: Array.isArray(parsedData.connections) ? parsedData.connections : [],
       calculations: Array.isArray(parsedData.calculations) ? parsedData.calculations : [],
       steps: Array.isArray(parsedData.steps) ? parsedData.steps : [],
