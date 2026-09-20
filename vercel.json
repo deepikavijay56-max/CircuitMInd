@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo 'Building static frontend...'",
+  "outputDirectory": "public",
+  "framework": null
+}

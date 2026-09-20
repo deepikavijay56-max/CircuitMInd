@@ -1,0 +1,4 @@
+# Backend server (runs on Render, not Vercel)
+server.js
+.env
+*.log
