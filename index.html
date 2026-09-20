@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CircuitMind | Hardware &amp; Embedded Circuit Architecture Designer</title>
   <meta name="description" content="Design complete embedded circuits, bill of materials, pinouts, and build instructions from your project idea." />
+  <link rel="icon" type="image/png" href="logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -40,43 +41,32 @@
       --code-bg:        #050909;
       --table-stripe:   rgba(255,255,255,0.016);
       --table-hover:    rgba(20,184,166,0.05);
-      --grid-color:     rgba(15,118,110,0.06);
+      --grid-color:     rgba(255,255,255,0.025);
     }
     [data-theme="light"] {
-      --bg-canvas:           #F0F4F3;
+      --bg-canvas:           #F4F7F6;
       --bg-surface:          #FFFFFF;
-      --bg-surface-elevated: #EAF1F0;
-      --bg-surface-hover:    #DDE8E7;
-      --border-subtle:       #C8D9D7;
-      --border-accent:       #A8C4C2;
-      --text-primary:   #0B1C1C;
-      --text-secondary: #3D6660;
-      --text-muted:     #7FA8A0;
+      --bg-surface-elevated: #EDF3F1;
+      --bg-surface-hover:    #E2ECE9;
+      --border-subtle:       #D2DFDC;
+      --border-accent:       #B5CDC8;
+      --text-primary:   #0D1F1D;
+      --text-secondary: #3D615B;
+      --text-muted:     #7A9E98;
       --teal:           #0F766E;
       --teal-bright:    #0D9488;
       --teal-glow:      rgba(15,118,110,0.18);
       --teal-faint:     rgba(15,118,110,0.07);
-      --copper:         #B56D20;
+      --copper:         #B4681E;
       --copper-bright:  #C9812E;
-      --copper-glow:    rgba(181,109,32,0.18);
-      --copper-faint:   rgba(181,109,32,0.06);
-      --green:          #16A34A;
-      --green-faint:    rgba(22,163,74,0.08);
-      --green-border:   rgba(22,163,74,0.28);
-      --red:            #E11D48;
-      --amber:          #D97706;
-      --amber-faint:    #FFFBEB;
-      --amber-border:   #FCD34D;
-      --card-shadow:    0 4px 20px -4px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);
-      --code-bg:        #0B1C1C;
-      --table-stripe:   rgba(0,0,0,0.015);
-      --table-hover:    rgba(15,118,110,0.06);
-      --grid-color:     rgba(15,118,110,0.05);
+      --copper-glow:    rgba(180,104,30,0.15);
+      --grid-color:     rgba(0,0,0,0.04);
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    *{box-sizing:border-box;margin:0;padding:0;}
     *{transition:background-color .22s ease,border-color .22s ease,color .18s ease,box-shadow .2s ease;}
     body{
-      font-family:var(--font-sans);background-color:var(--bg-canvas);color:var(--text-primary);
+      background:var(--bg-canvas);color:var(--text-primary);
+      font-family:var(--font-sans);
       line-height:1.6;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
       background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);
       background-size:28px 28px;
@@ -86,13 +76,13 @@
     .nav-container{max-width:1100px;margin:0 auto;padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
     .brand{display:flex;align-items:center;gap:.8rem;text-decoration:none;color:inherit;}
     .brand-icon{
-      width:38px;height:38px;border-radius:8px;background:var(--teal-faint);border:1px solid var(--teal);
+      width:38px;height:38px;border-radius:8px;background:#0A0F0F;border:1px solid var(--border-accent);
       display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 14px var(--teal-glow),inset 0 0 8px rgba(15,118,110,.12);
-      color:var(--teal-bright);flex-shrink:0;
+      box-shadow:0 0 14px var(--teal-glow);
+      color:var(--teal-bright);flex-shrink:0;overflow:hidden;
     }
     .brand-icon svg{width:22px;height:22px;}
-    .site-logo{width:28px;height:28px;object-fit:contain;border-radius:6px;display:block;}
+    .site-logo{width:100%;height:100%;object-fit:cover;display:block;}
     .brand-text h1{font-size:1.3rem;font-weight:800;letter-spacing:-.04em;color:var(--text-primary);font-family:var(--font-mono);}
     .brand-text h1 span{color:var(--teal-bright);}
     .brand-text p{font-size:.7rem;color:var(--text-muted);font-weight:500;font-family:var(--font-mono);letter-spacing:.04em;text-transform:uppercase;}
@@ -663,7 +653,7 @@
     <div class="nav-container">
       <a href="#" class="brand" id="homeBrandLink">
         <div class="brand-icon">
-          <img src="public/logo.png" alt="CircuitMind logo" class="site-logo" />
+          <img src="logo.png" alt="CircuitMind logo" class="site-logo" />
         </div>
         <div class="brand-text">
           <h1>Circuit<span>Mind</span></h1>

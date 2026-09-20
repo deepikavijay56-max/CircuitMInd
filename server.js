@@ -84,8 +84,10 @@ async function generateCircuitFromGemini(prompt, extraParts = []) {
       } catch (err) {
         lastError = err;
         console.warn(`Attempt ${attempt} for model ${modelName} failed: ${err.message}`);
-        // If service is busy (503), back off briefly before retrying or switching models
-        if (err.status === 503 || (err.message && err.message.includes('503'))) {
+        const msg = err.message ? err.message.toLowerCase() : '';
+        const isOverloaded = err.status === 503 || err.status === 429 || msg.includes('503') || msg.includes('429') || msg.includes('overloaded') || msg.includes('too many requests');
+        // If service is busy (503/429/overloaded), back off briefly before retrying or switching models
+        if (isOverloaded) {
           await new Promise((resolve) => setTimeout(resolve, 1500));
         } else {
           // If error is not 503 (e.g. 400 or 404), break inner retry and try next candidate
