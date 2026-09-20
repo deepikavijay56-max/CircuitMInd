@@ -426,6 +426,73 @@
     .transcription-content{font-size:.92rem;color:var(--text-primary);line-height:1.55;}
     .transcription-prefix{font-weight:700;color:var(--teal-bright);font-family:var(--font-mono);font-size:.82rem;}
 
+    /* Rendered Schematic Diagram Section */
+    .schematic-canvas-container{
+      position:relative;background:var(--code-bg);border:1px solid var(--border-subtle);
+      border-radius:8px;overflow:hidden;margin-bottom:1.25rem;
+    }
+    .schematic-toolbar{
+      position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:.4rem;
+      z-index:10;background:var(--bg-surface-elevated);border:1px solid var(--border-accent);
+      padding:.25rem .4rem;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    }
+    .schematic-tool-btn{
+      background:var(--bg-surface);border:1px solid var(--border-subtle);color:var(--text-secondary);
+      width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;font-size:.88rem;font-weight:700;font-family:var(--font-mono);
+      transition:all .15s ease;
+    }
+    .schematic-tool-btn:hover{
+      background:var(--teal-faint);color:var(--teal-bright);border-color:var(--teal);
+    }
+    .schematic-svg-wrapper{
+      width:100%;height:580px;overflow:hidden;cursor:grab;position:relative;
+      background:var(--code-bg);display:flex;align-items:center;justify-content:center;
+    }
+    .schematic-svg-wrapper.grabbing{cursor:grabbing;}
+    .schematic-svg{
+      width:100%;height:100%;user-select:none;transition:transform .06s linear;
+      transform-origin:center center;
+    }
+    .schematic-legend{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;padding:.75rem 1.1rem;
+      background:var(--bg-surface-elevated);border-top:1px solid var(--border-subtle);
+      font-family:var(--font-mono);font-size:.7rem;color:var(--text-secondary);
+    }
+    .schematic-legend-items{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;}
+    .legend-item{display:inline-flex;align-items:center;gap:.4rem;}
+    .legend-line{width:18px;height:3.5px;border-radius:2px;display:inline-block;}
+    .legend-hint{font-size:.65rem;color:var(--text-muted);}
+    
+    /* SVG Schematic Typography & Element Styles */
+    .schem-comp-title{font-family:var(--font-mono);font-size:11px;font-weight:700;fill:var(--text-primary);letter-spacing:.02em;}
+    .schem-comp-sub{font-family:var(--font-sans);font-size:9.5px;fill:var(--text-muted);}
+    .schem-pin-label{font-family:var(--font-mono);font-size:9px;font-weight:600;fill:var(--text-secondary);}
+    .schem-pin-label.left-pin{text-anchor:start;}
+    .schem-pin-label.right-pin{text-anchor:end;}
+    .schem-ic-title{font-family:var(--font-mono);font-size:11.5px;font-weight:700;fill:#ffffff;letter-spacing:.03em;}
+    .schem-ic-sub{font-family:var(--font-sans);font-size:9px;fill:rgba(255,255,255,0.7);}
+    .schem-polarity-plus{font-family:var(--font-mono);font-size:12px;font-weight:800;fill:#ef4444;}
+    .schem-polarity-minus{font-family:var(--font-mono);font-size:13px;font-weight:800;fill:#64748b;}
+    .pin-dot{transition:r .15s ease,fill .15s ease;}
+    .schematic-wire{
+      stroke-linecap:round;stroke-linejoin:round;fill:none;
+      transition:stroke-width .15s ease,stroke .15s ease,filter .15s ease;
+      cursor:pointer;
+    }
+    .schematic-wire:hover{
+      stroke-width:4px !important;filter:drop-shadow(0 0 5px currentColor);
+    }
+    .schematic-comp-group{cursor:pointer;transition:all .15s ease;}
+    .schematic-comp-group:hover rect.comp-body{
+      stroke:var(--teal-bright) !important;stroke-width:2.2px !important;
+      filter:drop-shadow(0 0 8px rgba(45,212,191,0.25));
+    }
+    .schematic-comp-group:hover path.comp-symbol-stroke{
+      stroke:var(--teal-bright) !important;stroke-width:2.8px !important;
+      filter:drop-shadow(0 0 6px rgba(45,212,191,0.35));
+    }
+
     @media(max-width:768px){
       .nav-container{padding:.7rem 1rem;}
       main{padding:1.75rem 1rem 4rem;}
@@ -667,6 +734,39 @@
         </div>
         <div class="sub-section-label">Functional Modules</div>
         <div id="functionalBlocksList" class="functional-blocks-grid"></div>
+      </section>
+
+      <section id="sectionSchematic" class="output-section">
+        <div class="section-header">
+          <div class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="18" y1="9" x2="18" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+            Interactive Schematic Diagram
+          </div>
+          <div class="section-actions">
+            <button type="button" id="zoomInSchematicBtn" class="schematic-tool-btn" title="Zoom in">+</button>
+            <button type="button" id="zoomOutSchematicBtn" class="schematic-tool-btn" title="Zoom out">&minus;</button>
+            <button type="button" id="resetSchematicBtn" class="schematic-tool-btn" title="Reset view" style="width:auto;padding:0 .5rem;font-size:.72rem;">Reset</button>
+            <button type="button" id="exportSvgBtn" class="copy-btn" title="Download standalone SVG schematic">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export SVG</span>
+            </button>
+            <span class="section-ref">SCH</span>
+          </div>
+        </div>
+        <div class="schematic-canvas-container" id="schematicCanvasContainer">
+          <div id="schematicSvgWrapper" class="schematic-svg-wrapper">
+            <svg id="schematicSvg" xmlns="http://www.w3.org/2000/svg" class="schematic-svg" viewBox="0 0 1100 680"></svg>
+          </div>
+          <div class="schematic-legend">
+            <div class="schematic-legend-items">
+              <div class="legend-item"><span class="legend-line" style="background:#ef4444;"></span><span>Power (+VCC)</span></div>
+              <div class="legend-item"><span class="legend-line" style="background:#64748b;"></span><span>Ground (GND)</span></div>
+              <div class="legend-item"><span class="legend-line" style="background:#14b8a6;"></span><span>Analog / Signals</span></div>
+              <div class="legend-item"><span class="legend-line" style="background:#a855f7;"></span><span>Digital / Control</span></div>
+            </div>
+            <span class="legend-hint">&#128070; Drag to pan &bull; Scroll / &plus;&minus; to zoom &bull; Hover wire to inspect</span>
+          </div>
+        </div>
       </section>
 
       <section id="sectionBOM" class="output-section">
@@ -1121,6 +1221,14 @@
       (d.calculations||[]).forEach(c=>{const el=document.createElement('div');el.className='calculation-item';el.textContent=c;cl.appendChild(el);});
       const sl=document.getElementById('safetyList');sl.innerHTML='';
       (d.safety||[]).forEach(w=>{const li=document.createElement('li');li.textContent=w;sl.appendChild(li);});
+      
+      // Render Interactive Schematic Diagram
+      try {
+        renderSchematicDiagram(d);
+      } catch(schemErr) {
+        console.error('Error rendering schematic diagram:', schemErr);
+      }
+
       outputArea.classList.add('visible');
       outputArea.querySelectorAll('.output-section').forEach((s,i)=>{
         s.classList.remove('revealed');s.style.animationDelay=(i*100)+'ms';void s.offsetWidth;s.classList.add('revealed');
@@ -1129,6 +1237,624 @@
     }
 
     function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+
+    // ==========================================
+    // RENDERED SCHEMATIC DIAGRAM & SYMBOL LIBRARY
+    // ==========================================
+
+    let schemScale = 1, schemPanX = 0, schemPanY = 0, isPanningSchem = false, panStartX = 0, panStartY = 0;
+
+    function initSchematicControls() {
+      const svgEl = document.getElementById('schematicSvg');
+      const wrapper = document.getElementById('schematicSvgWrapper');
+      const zoomInBtn = document.getElementById('zoomInSchematicBtn');
+      const zoomOutBtn = document.getElementById('zoomOutSchematicBtn');
+      const resetBtn = document.getElementById('resetSchematicBtn');
+      const exportBtn = document.getElementById('exportSvgBtn');
+
+      if (!svgEl || !wrapper) return;
+
+      function updateTransform() {
+        svgEl.style.transform = `translate(${schemPanX}px, ${schemPanY}px) scale(${schemScale})`;
+      }
+
+      if (zoomInBtn) {
+        zoomInBtn.onclick = () => {
+          schemScale = Math.min(2.5, +(schemScale + 0.18).toFixed(2));
+          updateTransform();
+        };
+      }
+      if (zoomOutBtn) {
+        zoomOutBtn.onclick = () => {
+          schemScale = Math.max(0.4, +(schemScale - 0.18).toFixed(2));
+          updateTransform();
+        };
+      }
+      if (resetBtn) {
+        resetBtn.onclick = () => {
+          schemScale = 1;
+          schemPanX = 0;
+          schemPanY = 0;
+          updateTransform();
+        };
+      }
+      if (exportBtn) {
+        exportBtn.onclick = () => {
+          const clone = svgEl.cloneNode(true);
+          clone.style.transform = '';
+          const svgContent = new XMLSerializer().serializeToString(clone);
+          const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const titleSlug = (currentCircuitData && currentCircuitData.title ? currentCircuitData.title : 'circuit')
+            .toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          a.href = url;
+          a.download = `${titleSlug}-schematic.svg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        };
+      }
+
+      wrapper.onmousedown = (e) => {
+        if (e.target.closest('button')) return;
+        isPanningSchem = true;
+        panStartX = e.clientX - schemPanX;
+        panStartY = e.clientY - schemPanY;
+        wrapper.classList.add('grabbing');
+      };
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanningSchem) return;
+        schemPanX = e.clientX - panStartX;
+        schemPanY = e.clientY - panStartY;
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isPanningSchem) {
+          isPanningSchem = false;
+          wrapper.classList.remove('grabbing');
+        }
+      });
+
+      wrapper.onwheel = (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        schemScale = Math.min(2.5, Math.max(0.4, +(schemScale + delta).toFixed(2)));
+        updateTransform();
+      };
+    }
+
+    // Classification helpers
+    function classifyComponent(comp) {
+      const name = ((comp && comp.name) || '').toLowerCase();
+      const purpose = ((comp && comp.purpose) || '').toLowerCase();
+      const text = `${name} ${purpose}`;
+
+      if (/resistor|\b\d+[\s]*(k|m|r|ohm|ω)\b/.test(text)) return 'resistor';
+      if (/capacitor|[\s\d](µf|uf|pf|nf)\b/.test(text)) return 'capacitor';
+      if (/\bled\b|light emitting diode/.test(text)) return 'led';
+      if (/\bdiode\b|1n400[0-7]|1n4148|flyback diode/.test(text)) return 'diode';
+      if (/\b(battery|power supply|adapter|vcc supply|9v clip|solar panel)\b/.test(text)) return 'battery';
+      if (/\b(switch|pushbutton|push button|button|toggle switch)\b/.test(text)) return 'switch';
+      if (/\b(gnd|ground)\b/.test(text)) return 'ground';
+      return 'ic';
+    }
+
+    function isMicrocontroller(name) {
+      const n = (name || '').toLowerCase();
+      return /arduino|esp32|esp8266|pico|raspberry|atmega|stm32|microcontroller|mcu\b/.test(n);
+    }
+
+    function isInputDevice(comp) {
+      const text = `${(comp && comp.name) || ''} ${(comp && comp.purpose) || ''}`.toLowerCase();
+      return /sensor|detector|probe|switch|button|ldr|potentiometer|battery|power|supply/.test(text);
+    }
+
+    // 1. Resistor (zigzag line)
+    function drawResistorSymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || '1';
+      const pin2 = pins[1] || '2';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 84, y: y, dir: 'right', name: pin2 };
+      
+      const pathD = `M ${x} ${y} L ${x + 16} ${y} L ${x + 21} ${y - 11} L ${x + 29} ${y + 11} L ${x + 37} ${y - 11} L ${x + 45} ${y + 11} L ${x + 53} ${y - 11} L ${x + 61} ${y + 11} L ${x + 66} ${y} L ${x + 84} ${y}`;
+      
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="${pathD}" class="comp-symbol-stroke" fill="none" stroke="var(--teal-bright)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 84}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 42}" y="${y - 16}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 42}" y="${y + 24}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || '')}</text>
+          <text x="${x - 6}" y="${y - 5}" text-anchor="end" class="schem-pin-label">${esc(pin1)}</text>
+          <text x="${x + 90}" y="${y - 5}" text-anchor="start" class="schem-pin-label">${esc(pin2)}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, '1': p1, '2': p2 }, bbox: { x: x - 20, y: y - 30, width: 124, height: 60 } };
+    }
+
+    // 2. Capacitor (two parallel lines)
+    function drawCapacitorSymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || '1';
+      const pin2 = pins[1] || '2';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 76, y: y, dir: 'right', name: pin2 };
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="M ${x} ${y} L ${x + 30} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2.2"/>
+          <line x1="${x + 30}" y1="${y - 16}" x2="${x + 30}" y2="${y + 16}" stroke="var(--teal-bright)" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="${x + 44}" y1="${y - 16}" x2="${x + 44}" y2="${y + 16}" stroke="var(--teal-bright)" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M ${x + 44} ${y} L ${x + 76} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2.2"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 76}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 38}" y="${y - 22}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 38}" y="${y + 26}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || '')}</text>
+          <text x="${x - 6}" y="${y - 5}" text-anchor="end" class="schem-pin-label">${esc(pin1)}</text>
+          <text x="${x + 82}" y="${y - 5}" text-anchor="start" class="schem-pin-label">${esc(pin2)}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, '1': p1, '2': p2 }, bbox: { x: x - 20, y: y - 32, width: 116, height: 64 } };
+    }
+
+    // 3. LED (triangle + bar, with small diagonal light-emission lines)
+    function drawLEDSymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || 'Anode';
+      const pin2 = pins[1] || 'Cathode';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 76, y: y, dir: 'right', name: pin2 };
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="M ${x} ${y} L ${x + 24} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <polygon points="${x + 24},${y - 13} ${x + 46},${y} ${x + 24},${y + 13}" fill="rgba(20,184,166,0.22)" stroke="var(--teal-bright)" stroke-width="2.2" stroke-linejoin="round"/>
+          <line x1="${x + 46}" y1="${y - 13}" x2="${x + 46}" y2="${y + 13}" stroke="var(--teal-bright)" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M ${x + 46} ${y} L ${x + 76} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <path d="M ${x + 34} ${y - 14} L ${x + 43} ${y - 24} M ${x + 39} ${y - 24} L ${x + 43} ${y - 24} L ${x + 43} ${y - 20}" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M ${x + 42} ${y - 11} L ${x + 51} ${y - 21} M ${x + 47} ${y - 21} L ${x + 51} ${y - 21} L ${x + 51} ${y - 17}" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 76}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 38}" y="${y - 28}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 38}" y="${y + 24}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || 'LED Indicator')}</text>
+          <text x="${x - 6}" y="${y - 5}" text-anchor="end" class="schem-pin-label">${esc(pin1)}</text>
+          <text x="${x + 82}" y="${y - 5}" text-anchor="start" class="schem-pin-label">${esc(pin2)}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, 'anode': p1, 'cathode': p2, '+': p1, '-': p2, '1': p1, '2': p2 }, bbox: { x: x - 20, y: y - 36, width: 116, height: 68 } };
+    }
+
+    // 4. Standard Diode (triangle + bar)
+    function drawDiodeSymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || 'Anode';
+      const pin2 = pins[1] || 'Cathode';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 76, y: y, dir: 'right', name: pin2 };
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="M ${x} ${y} L ${x + 24} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <polygon points="${x + 24},${y - 13} ${x + 46},${y} ${x + 24},${y + 13}" fill="rgba(20,184,166,0.2)" stroke="var(--teal-bright)" stroke-width="2.2" stroke-linejoin="round"/>
+          <line x1="${x + 46}" y1="${y - 13}" x2="${x + 46}" y2="${y + 13}" stroke="var(--teal-bright)" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M ${x + 46} ${y} L ${x + 76} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 76}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 38}" y="${y - 18}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 38}" y="${y + 24}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || 'Flyback Diode')}</text>
+          <text x="${x - 6}" y="${y - 5}" text-anchor="end" class="schem-pin-label">${esc(pin1)}</text>
+          <text x="${x + 82}" y="${y - 5}" text-anchor="start" class="schem-pin-label">${esc(pin2)}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, 'anode': p1, 'cathode': p2, '+': p1, '-': p2, '1': p1, '2': p2 }, bbox: { x: x - 20, y: y - 30, width: 116, height: 60 } };
+    }
+
+    // 5. Battery / Power Source (long+short parallel lines, labeled + and -)
+    function drawBatterySymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || '+';
+      const pin2 = pins[1] || '-';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 72, y: y, dir: 'right', name: pin2 };
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="M ${x} ${y} L ${x + 20} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <line x1="${x + 20}" y1="${y - 18}" x2="${x + 20}" y2="${y + 18}" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="${x + 28}" y1="${y - 10}" x2="${x + 28}" y2="${y + 10}" stroke="#64748b" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="${x + 38}" y1="${y - 18}" x2="${x + 38}" y2="${y + 18}" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="${x + 46}" y1="${y - 10}" x2="${x + 46}" y2="${y + 10}" stroke="#64748b" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M ${x + 46} ${y} L ${x + 72} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <text x="${x + 13}" y="${y - 12}" class="schem-polarity-plus">+</text>
+          <text x="${x + 53}" y="${y - 12}" class="schem-polarity-minus">&minus;</text>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 72}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 36}" y="${y - 24}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 36}" y="${y + 26}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || 'Power Source')}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, '+': p1, '-': p2, 'vcc': p1, 'gnd': p2, '5v': p1, 'vin': p1, '1': p1, '2': p2 }, bbox: { x: x - 20, y: y - 32, width: 112, height: 68 } };
+    }
+
+    // 6. Switch (line with break and diagonal contact)
+    function drawSwitchSymbol(x, y, comp, pins) {
+      const pin1 = pins[0] || '1';
+      const pin2 = pins[1] || '2';
+      const p1 = { x: x, y: y, dir: 'left', name: pin1 };
+      const p2 = { x: x + 76, y: y, dir: 'right', name: pin2 };
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <path d="M ${x} ${y} L ${x + 22} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <circle cx="${x + 25}" cy="${y}" r="3" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <line x1="${x + 27}" y1="${y - 2}" x2="${x + 49}" y2="${y - 16}" stroke="var(--teal-bright)" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="${x + 51}" cy="${y}" r="3" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <path d="M ${x + 54} ${y} L ${x + 76} ${y}" fill="none" stroke="var(--teal-bright)" stroke-width="2"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <circle cx="${x + 76}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 38}" y="${y - 24}" text-anchor="middle" class="schem-comp-title">${esc(comp.name)}</text>
+          <text x="${x + 38}" y="${y + 24}" text-anchor="middle" class="schem-comp-sub">${esc(comp.purpose || 'Switch Contact')}</text>
+          <text x="${x - 6}" y="${y - 5}" text-anchor="end" class="schem-pin-label">${esc(pin1)}</text>
+          <text x="${x + 82}" y="${y - 5}" text-anchor="start" class="schem-pin-label">${esc(pin2)}</text>
+        </g>
+      `;
+      return { svg, pins: { [pin1.toLowerCase()]: p1, [pin2.toLowerCase()]: p2, '1': p1, '2': p2, 'in': p1, 'out': p2 }, bbox: { x: x - 20, y: y - 32, width: 116, height: 64 } };
+    }
+
+    // 7. Ground symbol (simple down-pointing lines)
+    function drawGroundSymbol(x, y, label) {
+      const p1 = { x: x, y: y, dir: 'top', name: 'GND' };
+      const svg = `
+        <g class="schematic-gnd-group">
+          <line x1="${x}" y1="${y}" x2="${x}" y2="${y + 12}" stroke="#64748b" stroke-width="2"/>
+          <line x1="${x - 14}" y1="${y + 12}" x2="${x + 14}" y2="${y + 12}" stroke="#64748b" stroke-width="2.6" stroke-linecap="round"/>
+          <line x1="${x - 9}" y1="${y + 17}" x2="${x + 9}" y2="${y + 17}" stroke="#64748b" stroke-width="2" stroke-linecap="round"/>
+          <line x1="${x - 4}" y1="${y + 22}" x2="${x + 4}" y2="${y + 22}" stroke="#64748b" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="${x}" cy="${y}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x}" y="${y + 35}" text-anchor="middle" class="schem-pin-label" fill="#64748b">GND</text>
+        </g>
+      `;
+      return { svg, pins: { 'gnd': p1, '1': p1 }, bbox: { x: x - 20, y: y, width: 40, height: 42 } };
+    }
+
+    // 8. Generic IC / Microcontroller / Sensor / Module Symbol
+    function drawGenericICSymbol(x, y, comp, leftPins, rightPins) {
+      const isMCU = isMicrocontroller(comp.name);
+      const w = isMCU ? 200 : 175;
+      const rowHeight = 28;
+      const headerHeight = 36;
+      const pinRows = Math.max(leftPins.length, rightPins.length, 2);
+      const h = headerHeight + pinRows * rowHeight + 14;
+
+      const pinsMap = {};
+      let pinElements = '';
+
+      // Left pins
+      leftPins.forEach((pin, i) => {
+        const py = y + headerHeight + 14 + i * rowHeight;
+        const px = x - 15;
+        pinElements += `
+          <line x1="${x}" y1="${py}" x2="${px}" y2="${py}" stroke="var(--teal)" stroke-width="1.8"/>
+          <circle cx="${px}" cy="${py}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + 7}" y="${py + 4}" class="schem-pin-label left-pin">${esc(pin)}</text>
+        `;
+        pinsMap[pin.toLowerCase()] = { x: px, y: py, dir: 'left', name: pin };
+      });
+
+      // Right pins
+      rightPins.forEach((pin, i) => {
+        const py = y + headerHeight + 14 + i * rowHeight;
+        const px = x + w + 15;
+        pinElements += `
+          <line x1="${x + w}" y1="${py}" x2="${px}" y2="${py}" stroke="var(--teal)" stroke-width="1.8"/>
+          <circle cx="${px}" cy="${py}" r="3.5" class="pin-dot" fill="var(--copper-bright)"/>
+          <text x="${x + w - 7}" y="${py + 4}" text-anchor="end" class="schem-pin-label right-pin">${esc(pin)}</text>
+        `;
+        pinsMap[pin.toLowerCase()] = { x: px, y: py, dir: 'right', name: pin };
+      });
+
+      const borderColor = isMCU ? 'var(--teal-bright)' : 'var(--teal)';
+      const headerFill = isMCU ? 'rgba(20,184,166,0.28)' : 'rgba(20,184,166,0.14)';
+
+      const svg = `
+        <g class="schematic-comp-group" data-comp="${esc(comp.name)}">
+          <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" class="comp-body"
+            fill="#0b1719" stroke="${borderColor}" stroke-width="1.8"/>
+          <rect x="${x}" y="${y}" width="${w}" height="${headerHeight}" rx="6"
+            fill="${headerFill}" stroke="${borderColor}" stroke-width="1"/>
+          <rect x="${x}" y="${y + headerHeight - 4}" width="${w}" height="4" fill="${headerFill}"/>
+          <text x="${x + w / 2}" y="${y + 18}" text-anchor="middle" class="schem-ic-title">${esc(comp.name)}</text>
+          <text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" class="schem-ic-sub">${esc(comp.purpose || '')}</text>
+          ${pinElements}
+        </g>
+      `;
+
+      return { svg, pins: pinsMap, bbox: { x: x - 25, y: y, width: w + 50, height: h + 10 } };
+    }
+
+    // Helper to generate Manhattan orthogonal wire
+    function generateOrthogonalWire(p1, p2, index) {
+      const x1 = p1.x, y1 = p1.y;
+      const x2 = p2.x, y2 = p2.y;
+      const stub = 20;
+
+      let s1x = x1, s1y = y1;
+      if (p1.dir === 'left') s1x = x1 - stub;
+      else if (p1.dir === 'right') s1x = x1 + stub;
+      else if (p1.dir === 'top') s1y = y1 - stub;
+      else if (p1.dir === 'bottom') s1y = y1 + stub;
+
+      let s2x = x2, s2y = y2;
+      if (p2.dir === 'left') s2x = x2 - stub;
+      else if (p2.dir === 'right') s2x = x2 + stub;
+      else if (p2.dir === 'top') s2y = y2 - stub;
+      else if (p2.dir === 'bottom') s2y = y2 + stub;
+
+      const laneOffset = ((index % 7) - 3) * 7;
+
+      let pathD = `M ${x1} ${y1} L ${s1x} ${s1y}`;
+
+      if (Math.abs(s1x - s2x) < 32) {
+        pathD += ` L ${s1x} ${s2y} L ${s2x} ${s2y} L ${x2} ${y2}`;
+      } else if (s1x < s2x) {
+        const midX = (s1x + s2x) / 2 + laneOffset;
+        pathD += ` L ${midX} ${s1y} L ${midX} ${s2y} L ${s2x} ${s2y} L ${x2} ${y2}`;
+      } else {
+        const midY = (s1y + s2y) / 2 + laneOffset;
+        pathD += ` L ${s1x} ${midY} L ${s2x} ${midY} L ${s2x} ${s2y} L ${x2} ${y2}`;
+      }
+
+      return pathD;
+    }
+
+    function getWireColor(fromPinName, toPinName, note) {
+      const text = `${fromPinName || ''} ${toPinName || ''} ${note || ''}`.toLowerCase();
+      if (/5v|3\.3v|vcc|vin|power|\+/.test(text)) return '#ef4444';
+      if (/gnd|ground|return|\-/.test(text)) return '#64748b';
+      if (/a0|a1|a2|adc|analog|sensor|moisture|temp/.test(text)) return '#14b8a6';
+      if (/in|out|d0|d1|d2|d3|d4|d5|d6|d7|d8|d9|d10|d11|d12|d13|trig|echo|pwm|sda|scl|rx|tx|gpio|relay/.test(text)) return '#a855f7';
+      return '#2dd4bf';
+    }
+
+    // Main Schematic Diagram Generator Function
+    function renderSchematicDiagram(d) {
+      const svgEl = document.getElementById('schematicSvg');
+      if (!svgEl) return;
+
+      const comps = Array.isArray(d.components) ? d.components : [];
+      const conns = Array.isArray(d.connections) ? d.connections : [];
+
+      if (comps.length === 0) {
+        svgEl.innerHTML = '<text x="550" y="300" text-anchor="middle" fill="var(--text-muted)">No components available to display schematic</text>';
+        return;
+      }
+
+      // Collect pin names per component from connections
+      const compPinSets = comps.map(() => new Set());
+      const compNamesLower = comps.map(c => (c.name || '').toLowerCase());
+
+      conns.forEach(conn => {
+        ['from', 'to'].forEach(side => {
+          const raw = (conn[side] || '').trim();
+          if (!raw) return;
+
+          let bestIdx = -1;
+          let bestLen = 0;
+          compNamesLower.forEach((cn, i) => {
+            const rawLower = raw.toLowerCase();
+            if (rawLower.includes(cn) && cn.length > bestLen) {
+              bestIdx = i;
+              bestLen = cn.length;
+            } else {
+              const words = cn.split(/[\s\-_(),.]+/).filter(w => w.length > 2 && !['module','clone','series','piece','board','with','inch'].includes(w));
+              const matchWords = words.filter(w => rawLower.includes(w));
+              if (matchWords.length > 0 && matchWords.length * 10 > bestLen) {
+                bestIdx = i;
+                bestLen = matchWords.length * 10;
+              }
+            }
+          });
+
+          if (bestIdx >= 0) {
+            let pinStr = raw;
+            const cWords = comps[bestIdx].name.toLowerCase().split(/[\s\-_(),.]+/).filter(w => w.length > 1);
+            cWords.forEach(w => {
+              pinStr = pinStr.replace(new RegExp('\\b' + w + '\\b', 'gi'), '');
+            });
+            pinStr = pinStr.replace(/[:\-–—()\[\]]/g, ' ').trim();
+            if (!pinStr) pinStr = '1';
+            compPinSets[bestIdx].add(pinStr);
+          }
+        });
+      });
+
+      // Divide components into 3 functional columns
+      const col0 = [];
+      const col1 = [];
+      const col2 = [];
+
+      comps.forEach((c, i) => {
+        const type = classifyComponent(c);
+        const isMcu = isMicrocontroller(c.name);
+        const pins = Array.from(compPinSets[i]);
+
+        const compObj = {
+          comp: c,
+          index: i,
+          type: type,
+          pins: pins.length > 0 ? pins : ['1', '2']
+        };
+
+        if (isMcu) {
+          col1.push(compObj);
+        } else if (type === 'battery' || type === 'switch' || isInputDevice(c)) {
+          col0.push(compObj);
+        } else if (type === 'resistor' || type === 'capacitor' || type === 'diode') {
+          if (col1.length <= col0.length) col1.push(compObj);
+          else col0.push(compObj);
+        } else {
+          col2.push(compObj);
+        }
+      });
+
+      if (col1.length === 0) {
+        if (col0.length > 2) col1.push(col0.pop());
+        else if (col2.length > 2) col1.push(col2.shift());
+      }
+
+      // Compute Positions
+      const compCoords = new Map();
+      const colX = [85, 460, 835];
+      const renderedComponentsSvg = [];
+      const compPinRegistry = new Map();
+
+      let maxColHeight = 0;
+
+      [col0, col1, col2].forEach((col, colIdx) => {
+        let curY = 55;
+        col.forEach(item => {
+          const x = colX[colIdx];
+          const y = curY;
+          let res;
+
+          if (item.type === 'resistor') {
+            res = drawResistorSymbol(x, y + 25, item.comp, item.pins);
+            curY += 85;
+          } else if (item.type === 'capacitor') {
+            res = drawCapacitorSymbol(x, y + 25, item.comp, item.pins);
+            curY += 85;
+          } else if (item.type === 'led') {
+            res = drawLEDSymbol(x, y + 28, item.comp, item.pins);
+            curY += 95;
+          } else if (item.type === 'diode') {
+            res = drawDiodeSymbol(x, y + 25, item.comp, item.pins);
+            curY += 85;
+          } else if (item.type === 'battery') {
+            res = drawBatterySymbol(x, y + 28, item.comp, item.pins);
+            curY += 95;
+          } else if (item.type === 'switch') {
+            res = drawSwitchSymbol(x, y + 25, item.comp, item.pins);
+            curY += 85;
+          } else {
+            const leftPins = [];
+            const rightPins = [];
+            item.pins.forEach((p, pIdx) => {
+              const pLower = p.toLowerCase();
+              if (/vcc|5v|3\.3v|vin|\+|gnd|ground|\-|in|a0|a1|a2|analog|trig|sda|rx/.test(pLower)) {
+                leftPins.push(p);
+              } else if (/echo|out|no|com|nc|d0|d1|d2|d3|d4|d5|d6|d7|d8|d9|d10|d11|d12|d13|scl|tx|pwm/.test(pLower)) {
+                rightPins.push(p);
+              } else {
+                if (pIdx % 2 === 0) leftPins.push(p);
+                else rightPins.push(p);
+              }
+            });
+            if (leftPins.length === 0) leftPins.push('VCC', 'GND');
+            if (rightPins.length === 0) rightPins.push('SIGNAL');
+
+            res = drawGenericICSymbol(x, y, item.comp, leftPins, rightPins);
+            curY += res.bbox.height + 25;
+          }
+
+          renderedComponentsSvg.push(res.svg);
+          compCoords.set(item.index, { x, y, bbox: res.bbox });
+
+          Object.keys(res.pins).forEach(pKey => {
+            compPinRegistry.set(`${item.index}::${pKey.toLowerCase()}`, res.pins[pKey]);
+          });
+        });
+
+        if (curY > maxColHeight) maxColHeight = curY;
+      });
+
+      // Route Wires
+      const wiresSvg = [];
+      conns.forEach((conn, connIdx) => {
+        const findPinCoord = (endpointStr) => {
+          if (!endpointStr) return null;
+          const raw = endpointStr.trim().toLowerCase();
+
+          let bestIdx = -1;
+          let bestLen = 0;
+          compNamesLower.forEach((cn, i) => {
+            if (raw.includes(cn) && cn.length > bestLen) {
+              bestIdx = i;
+              bestLen = cn.length;
+            } else {
+              const words = cn.split(/[\s\-_(),.]+/).filter(w => w.length > 2 && !['module','clone','series','piece','board','with','inch'].includes(w));
+              const matchWords = words.filter(w => raw.includes(w));
+              if (matchWords.length > 0 && matchWords.length * 10 > bestLen) {
+                bestIdx = i;
+                bestLen = matchWords.length * 10;
+              }
+            }
+          });
+
+          if (bestIdx >= 0) {
+            let pinStr = raw;
+            const cWords = comps[bestIdx].name.toLowerCase().split(/[\s\-_(),.]+/).filter(w => w.length > 1);
+            cWords.forEach(w => {
+              pinStr = pinStr.replace(new RegExp('\\b' + w + '\\b', 'gi'), '');
+            });
+            pinStr = pinStr.replace(/[:\-–—()\[\]]/g, ' ').trim();
+            
+            const exactKey = `${bestIdx}::${pinStr}`;
+            if (compPinRegistry.has(exactKey)) return compPinRegistry.get(exactKey);
+
+            for (let [key, val] of compPinRegistry.entries()) {
+              if (key.startsWith(`${bestIdx}::`)) {
+                const subPin = key.split('::')[1];
+                if (pinStr && (subPin.includes(pinStr) || pinStr.includes(subPin))) {
+                  return val;
+                }
+              }
+            }
+
+            for (let [key, val] of compPinRegistry.entries()) {
+              if (key.startsWith(`${bestIdx}::`)) return val;
+            }
+          }
+          return null;
+        };
+
+        const p1 = findPinCoord(conn.from);
+        const p2 = findPinCoord(conn.to);
+
+        if (p1 && p2 && (p1.x !== p2.x || p1.y !== p2.y)) {
+          const wirePath = generateOrthogonalWire(p1, p2, connIdx);
+          const color = getWireColor(p1.name, p2.name, conn.note);
+          const tooltip = `${esc(conn.from)} → ${esc(conn.to)}${conn.note ? ' [' + esc(conn.note) + ']' : ''}`;
+          wiresSvg.push(`
+            <path d="${wirePath}" class="schematic-wire" stroke="${color}" stroke-width="2" stroke-opacity="0.9" data-conn="${connIdx}">
+              <title>${tooltip}</title>
+            </path>
+          `);
+        }
+      });
+
+      const canvasWidth = 1140;
+      const canvasHeight = Math.max(680, maxColHeight + 50);
+
+      svgEl.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
+      svgEl.innerHTML = `
+        <defs>
+          <pattern id="schemGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.85" fill="#152e32" opacity="0.75"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#schemGrid)"/>
+        <!-- Wires Group -->
+        <g class="schem-wires-layer">
+          ${wiresSvg.join('')}
+        </g>
+        <!-- Components Group -->
+        <g class="schem-components-layer">
+          ${renderedComponentsSvg.join('')}
+        </g>
+      `;
+
+      initSchematicControls();
+    }
   </script>
 </body>
 </html>
