@@ -40,11 +40,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-// Preferred Flash models in order of priority
+// Preferred Flash models in order of priority (multimodal enabled)
 const FLASH_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-2.5-flash-lite-preview-06-17'
+  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite'
 ].filter(Boolean);
 
 // Helper: Trims text for Gemini AI prompt token limits (< 800 words)
@@ -58,9 +59,14 @@ function trimPromptForGemini(text, maxWords = 800) {
   return text.trim();
 }
 
-// Resilient helper to call Gemini with retry & model fallback
-async function generateCircuitFromGemini(prompt) {
+// Resilient helper to call Gemini with retry & model fallback (supports multimodal image input)
+async function generateCircuitFromGemini(prompt, imagePart = null) {
   let lastError;
+
+  const contentParts = [prompt];
+  if (imagePart) {
+    contentParts.push(imagePart);
+  }
 
   for (const modelName of FLASH_MODELS) {
     for (let attempt = 1; attempt <= 2; attempt++) {
@@ -72,7 +78,7 @@ async function generateCircuitFromGemini(prompt) {
           }
         });
 
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent(contentParts);
         const response = await result.response;
         return response.text().trim();
       } catch (err) {
@@ -222,7 +228,7 @@ function verifyCircuitDesign(design) {
 
 // Route: POST /api/generate-circuit (with rate limiting)
 app.post('/api/generate-circuit', circuitLimiter, async (req, res) => {
-  const { idea, skill, budget, power } = req.body || {};
+  const { idea, skill, budget, power, componentPhoto } = req.body || {};
 
   // Validation: Idea must be at least 15 characters, no maximum limit
   if (!idea || typeof idea !== 'string' || idea.trim().length < 15) {
@@ -239,8 +245,58 @@ app.post('/api/generate-circuit', circuitLimiter, async (req, res) => {
     });
   }
 
+  // Parse optional multimodal componentPhoto (Bin-to-Build)
+  let imagePart = null;
+  if (componentPhoto) {
+    if (typeof componentPhoto === 'string') {
+      const match = componentPhoto.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+      if (match) {
+        imagePart = {
+          inlineData: {
+            mimeType: match[1],
+            data: match[2]
+          }
+        };
+      } else {
+        imagePart = {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: componentPhoto
+          }
+        };
+      }
+    } else if (typeof componentPhoto === 'object' && componentPhoto.data) {
+      let rawData = componentPhoto.data;
+      let mime = componentPhoto.mimeType || 'image/jpeg';
+      if (typeof rawData === 'string' && rawData.startsWith('data:')) {
+        const match = rawData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+        if (match) {
+          mime = match[1];
+          rawData = match[2];
+        }
+      }
+      imagePart = {
+        inlineData: {
+          mimeType: mime,
+          data: rawData
+        }
+      };
+    }
+  }
+
+  const hasPhoto = !!imagePart;
+
   // Prepare prompt with trimmed idea for token safety
   const promptIdea = trimPromptForGemini(idea, 800);
+
+  const photoInstruction = hasPhoto ? `
+SPARE COMPONENTS PHOTO ATTACHED:
+The user has attached a photo of components they already own. Identify which components in the photo are usable for this project. In your response, mark each BOM component with an 'owned' or 'buy' status based on what's visible in the photo. Only the 'buy' items should count toward total_cost — recalculate total_cost to reflect only what still needs to be purchased.
+` : ``;
+
+  const componentsSchema = hasPhoto
+    ? `"components":[{"name":"part with exact model","qty":"","purpose":"","price":"₹X","status":"owned|buy"}]`
+    : `"components":[{"name":"part with exact model","qty":"","purpose":"","price":"₹X","status":"buy"}]`;
 
   const prompt = `You are a senior embedded hardware engineer in India. Design a complete,
 buildable electronic circuit for this project.
@@ -249,14 +305,14 @@ PROJECT IDEA: ${promptIdea}
 BUILDER EXPERIENCE: ${skill || 'Beginner'}
 BUDGET: ${budget || 'Under ₹1,000'}
 POWER: ${power || 'Let system decide'}
-
+${photoInstruction}
 Use real, commonly available parts (ESP32, Arduino Uno/Nano, HC-SR04, DHT22,
 relay modules, etc.). Give real pin names. Prices in Indian Rupees.
 Reply with ONLY a JSON object, no markdown fences, no preamble, matching
 this exact schema:
 {"title":"","summary":"2-3 sentences","blocks":[{"name":"","role":""}],
 "block_diagram":"ASCII block diagram using +--+ boxes and --> arrows, max 70 chars wide",
-"components":[{"name":"part with exact model","qty":"","purpose":"","price":"₹X"}],
+${componentsSchema},
 "total_cost":"₹X approx",
 "connections":[{"from":"Component pin","to":"Component pin","note":"wire colour or caution"}],
 "calculations":["resistor/current/power calculations with actual numbers and formulas"],
@@ -267,7 +323,7 @@ this exact schema:
 At least 6 components and 10 connections where the project allows.`;
 
   try {
-    let responseText = await generateCircuitFromGemini(prompt);
+    let responseText = await generateCircuitFromGemini(prompt, imagePart);
 
     // Strip ```json and ``` fences if present
     if (responseText.startsWith('```')) {
@@ -285,13 +341,23 @@ At least 6 components and 10 connections where the project allows.`;
     }
 
     // Ensure all required schema fields exist (with safe defaults if any are missing)
+    const rawComps = Array.isArray(parsedData.components) ? parsedData.components : [];
+    const sanitizedComponents = rawComps.map(c => ({
+      name: c.name || "Unknown Component",
+      qty: c.qty || "1",
+      purpose: c.purpose || "",
+      price: c.price || "₹0",
+      status: (c.status && c.status.toLowerCase() === 'owned') ? 'owned' : 'buy'
+    }));
+
     const sanitizedResponse = {
       title: parsedData.title || "Custom Circuit Design",
       summary: parsedData.summary || "",
       blocks: Array.isArray(parsedData.blocks) ? parsedData.blocks : [],
       block_diagram: parsedData.block_diagram || "",
-      components: Array.isArray(parsedData.components) ? parsedData.components : [],
+      components: sanitizedComponents,
       total_cost: parsedData.total_cost || "N/A",
+      has_spare_parts: hasPhoto,
       connections: Array.isArray(parsedData.connections) ? parsedData.connections : [],
       calculations: Array.isArray(parsedData.calculations) ? parsedData.calculations : [],
       steps: Array.isArray(parsedData.steps) ? parsedData.steps : [],

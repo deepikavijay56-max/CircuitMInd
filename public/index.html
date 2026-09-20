@@ -329,6 +329,49 @@
     .verification-item.item-warn{color:#FCD34D;border-left:2px solid var(--amber);}
     .verification-item .item-icon{flex-shrink:0;margin-top:.15rem;font-weight:bold;}
 
+    /* Bin-to-Build Spare Parts Upload */
+    .spare-parts-upload{margin-top:.85rem;padding-top:.85rem;border-top:1px dashed var(--border-subtle);}
+    .upload-btn-label{
+      display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .85rem;
+      border-radius:6px;background:var(--bg-surface-elevated);border:1px solid var(--border-accent);
+      color:var(--text-secondary);font-family:var(--font-mono);font-size:.74rem;cursor:pointer;
+      transition:all .15s ease;user-select:none;
+    }
+    .upload-btn-label:hover{
+      color:var(--teal-bright);border-color:var(--teal);background:rgba(15,118,110,0.1);
+    }
+    .file-input-hidden{display:none;}
+    .photo-preview-container{margin-top:.65rem;}
+    .photo-preview-card{
+      display:inline-flex;align-items:center;gap:.75rem;padding:.4rem .65rem;
+      background:rgba(15,118,110,0.08);border:1px solid rgba(20,184,166,0.3);
+      border-radius:6px;max-width:100%;
+    }
+    .photo-preview-thumb{
+      width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid var(--border-accent);
+    }
+    .photo-preview-info{display:flex;flex-direction:column;gap:.15rem;}
+    .photo-name{font-family:var(--font-mono);font-size:.72rem;color:var(--text-primary);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .photo-tag{font-family:var(--font-mono);font-size:.65rem;color:var(--teal-bright);letter-spacing:.04em;text-transform:uppercase;font-weight:700;}
+    .photo-remove-btn{
+      background:none;border:none;color:var(--text-muted);cursor:pointer;padding:.25rem;
+      border-radius:4px;display:flex;align-items:center;justify-content:center;transition:color .15s;
+    }
+    .photo-remove-btn:hover{color:var(--red);}
+
+    /* BOM Owned vs Buy styling */
+    .owned-badge{
+      display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;
+      border-radius:4px;font-size:.72rem;font-weight:700;font-family:var(--font-mono);
+      background:rgba(20,184,166,0.12);color:var(--teal-bright);border:1px solid rgba(20,184,166,0.3);
+      white-space:nowrap;
+    }
+    .part-owned-tag{
+      font-size:.62rem;font-family:var(--font-mono);color:var(--teal-bright);
+      background:rgba(20,184,166,0.15);padding:.1rem .35rem;border-radius:3px;margin-left:.4rem;
+      vertical-align:middle;letter-spacing:.04em;font-weight:600;
+    }
+
     @media(max-width:768px){
       .nav-container{padding:.7rem 1rem;}
       main{padding:1.75rem 1rem 4rem;}
@@ -401,6 +444,35 @@
             <button type="button" class="chip-btn" data-idea="Smart plant watering system with soil moisture and OLED display">&#127807; Plant Watering + Sensor</button>
             <button type="button" class="chip-btn" data-idea="Solar-powered IoT weather station with ESP32 &amp; LoRa">&#9728;&#65039; Solar LoRa Weather Node</button>
             <button type="button" class="chip-btn" data-idea="Gesture-controlled robotic arm using flex sensors">&#129302; Gesture Robotic Arm</button>
+          </div>
+
+          <!-- Bin-to-Build: Optional Spare Parts Photo Upload -->
+          <div class="spare-parts-upload">
+            <div class="upload-label-wrapper">
+              <label for="componentPhotoInput" class="upload-btn-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Have spare parts? Upload a photo (optional)</span>
+              </label>
+              <input type="file" id="componentPhotoInput" accept="image/*" class="file-input-hidden" />
+            </div>
+            
+            <div id="photoPreviewContainer" class="photo-preview-container" style="display:none;">
+              <div class="photo-preview-card">
+                <img id="photoPreviewImg" src="" alt="Spare parts preview" class="photo-preview-thumb" />
+                <div class="photo-preview-info">
+                  <span id="photoPreviewName" class="photo-name"></span>
+                  <span class="photo-tag">&#9881; Bin-to-Build Active</span>
+                </div>
+                <button type="button" id="removePhotoBtn" class="photo-remove-btn" title="Remove photo" aria-label="Remove photo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -502,7 +574,7 @@
             Bill of Materials
           </div>
           <div class="section-actions">
-            <div id="totalCostBadge" class="total-cost-badge"><span>Total:</span><strong id="totalCostValue">&#8377;0</strong></div>
+            <div id="totalCostBadge" class="total-cost-badge"><span id="totalCostLabel">Estimated total:</span> <strong id="totalCostValue">&#8377;0</strong></div>
             <button type="button" id="copyBomBtn" class="copy-btn">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span id="copyBomText">Copy BOM</span>
@@ -625,8 +697,41 @@
       progressText=document.getElementById('progressText'),generateIcon=document.getElementById('generateIcon'),
       btnText=document.getElementById('btnText'),errorBox=document.getElementById('errorBox'),
       errorMessage=document.getElementById('errorMessage'),outputArea=document.getElementById('outputArea');
-    let currentCircuitData=null,loadingStepTimer=null;
+    let currentCircuitData=null,loadingStepTimer=null,attachedPhotoBase64=null;
     const STEPS=["Analyzing your idea...","Selecting components...","Calculating values...","Finalizing design..."];
+
+    const componentPhotoInput=document.getElementById('componentPhotoInput'),
+          photoPreviewContainer=document.getElementById('photoPreviewContainer'),
+          photoPreviewImg=document.getElementById('photoPreviewImg'),
+          photoPreviewName=document.getElementById('photoPreviewName'),
+          removePhotoBtn=document.getElementById('removePhotoBtn');
+
+    componentPhotoInput.addEventListener('change',(e)=>{
+      const f=e.target.files&&e.target.files[0];
+      if(!f)return;
+      if(!f.type.startsWith('image/')){
+        showError('Please select a valid image file (PNG, JPG, WEBP).');
+        componentPhotoInput.value='';
+        return;
+      }
+      hideError();
+      const reader=new FileReader();
+      reader.onload=(evt)=>{
+        attachedPhotoBase64=evt.target.result;
+        photoPreviewImg.src=attachedPhotoBase64;
+        photoPreviewName.textContent=f.name;
+        photoPreviewContainer.style.display='block';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    removePhotoBtn.addEventListener('click',()=>{
+      attachedPhotoBase64=null;
+      componentPhotoInput.value='';
+      photoPreviewImg.src='';
+      photoPreviewName.textContent='';
+      photoPreviewContainer.style.display='none';
+    });
 
     document.querySelectorAll('.chip-btn').forEach(b=>b.addEventListener('click',()=>{
       projectIdeaInput.value=b.getAttribute('data-idea');adjustH();hideError();projectIdeaInput.focus();
@@ -661,9 +766,14 @@
     makeCopy('copyDiagramBtn','copyDiagramText',()=>document.getElementById('asciiDiagram').textContent,'Copy');
     makeCopy('copyBomBtn','copyBomText',()=>{
       if(!currentCircuitData)return'';
-      const l=['=== '+( currentCircuitData.title||'Circuit')+' - BOM ===','Part\tQty\tPurpose\tPrice','---'];
-      (currentCircuitData.components||[]).forEach(c=>l.push(c.name+'\t'+c.qty+'\t'+c.purpose+'\t'+c.price));
-      l.push('---','Total: '+(currentCircuitData.total_cost||'N/A'));return l.join('\n');
+      const l=['=== '+( currentCircuitData.title||'Circuit')+' - BOM ===','Part\tQty\tPurpose\tStatus / Price','---'];
+      (currentCircuitData.components||[]).forEach(c=>{
+        const isOwned = (c.status && c.status.toLowerCase() === 'owned');
+        l.push(c.name+'\t'+c.qty+'\t'+c.purpose+'\t'+(isOwned ? '[✓ You have this]' : c.price));
+      });
+      const isBinToBuild = !!(currentCircuitData.has_spare_parts || (currentCircuitData.components && currentCircuitData.components.some(c => c.status === 'owned')));
+      const lbl = isBinToBuild ? 'Amount still to spend: ' : 'Estimated total: ';
+      l.push('---',lbl+(currentCircuitData.total_cost||'N/A'));return l.join('\n');
     },'Copy BOM');
     makeCopy('copyWiringBtn','copyWiringText',()=>{
       if(!currentCircuitData)return'';
@@ -684,7 +794,11 @@
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? ''
           : 'https://circuitmind-xomj.onrender.com';
-        const r=await fetch(`${API_BASE}/api/generate-circuit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea,skill,budget,power})});
+        const payload = { idea, skill, budget, power };
+        if (attachedPhotoBase64) {
+          payload.componentPhoto = attachedPhotoBase64;
+        }
+        const r=await fetch(`${API_BASE}/api/generate-circuit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Failed to generate circuit design.');
         currentCircuitData=d;renderCircuitResult(d);
@@ -736,11 +850,23 @@
       (d.blocks||[]).forEach(b=>{const el=document.createElement('div');el.className='block-card';
         el.innerHTML='<div class="block-name">'+esc(b.name)+'</div><div class="block-role">'+esc(b.role)+'</div>';
         bc.appendChild(el);});
+
+      // Update total cost label for Bin-to-Build
+      const isBinToBuild = !!(d.has_spare_parts || (d.components && d.components.some(c => c.status === 'owned')));
+      const totalLabel = document.getElementById('totalCostLabel');
+      if (totalLabel) totalLabel.textContent = isBinToBuild ? 'Amount still to spend:' : 'Estimated total:';
       document.getElementById('totalCostValue').textContent=d.total_cost||'N/A';
+
       const bb=document.getElementById('bomTableBody');bb.innerHTML='';
-      (d.components||[]).forEach(c=>{const r=document.createElement('tr');
-        r.innerHTML='<td class="part-name">'+esc(c.name)+'</td><td style="text-align:center"><span class="pin-badge">'+esc(c.qty)+'</span></td><td>'+esc(c.purpose)+'</td><td style="text-align:right;font-weight:700;color:var(--green);font-family:var(--font-mono)">'+esc(c.price)+'</td>';
-        bb.appendChild(r);});
+      (d.components||[]).forEach(c=>{
+        const isOwned = (c.status && c.status.toLowerCase() === 'owned');
+        const priceCell = isOwned
+          ? '<td style="text-align:right"><span class="owned-badge">&#10003; You have this</span></td>'
+          : '<td style="text-align:right;font-weight:700;color:var(--green);font-family:var(--font-mono)">'+esc(c.price)+'</td>';
+        const r=document.createElement('tr');
+        r.innerHTML='<td class="part-name">'+esc(c.name)+(isOwned ? ' <span class="part-owned-tag">OWNED</span>' : '')+'</td><td style="text-align:center"><span class="pin-badge">'+esc(c.qty)+'</span></td><td>'+esc(c.purpose)+'</td>'+priceCell;
+        bb.appendChild(r);
+      });
       const wb=document.getElementById('wiringTableBody');wb.innerHTML='';
       (d.connections||[]).forEach(c=>{const r=document.createElement('tr');
         r.innerHTML='<td><span class="pin-badge">'+esc(c.from)+'</span></td><td><span class="pin-badge" style="color:var(--copper-bright);border-color:rgba(201,129,46,0.3)">'+esc(c.to)+'</span></td><td class="wire-note">'+esc(c.note)+'</td>';
